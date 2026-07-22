@@ -1,0 +1,9 @@
+// Barrel export for section components
+export { Header } from "./Header";
+export { Hero } from "./Hero";
+export { Features } from "./Features";
+export { HowItWorks } from "./HowItWorks";
+export { ForChains } from "./ForChains";
+export { Testimonials } from "./Testimonials";
+export { CTA } from "./CTA";
+export { Footer } from "./Footer";
