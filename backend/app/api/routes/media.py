@@ -48,11 +48,13 @@ async def confirm_upload(
     """Confirm upload complete and create DB record."""
     service = MediaService(db, storage)
     asset = service.confirm_upload(job_id, data)
+    view_url = service.get_viewable_url(asset)
     return MediaAssetResponse(
         id=asset.id,
         job_id=asset.job_id,
         type=asset.type.value,
         url=asset.url,
+        view_url=view_url,
         compressed=asset.compressed,
         opened_by_customer_at=asset.opened_by_customer_at,
         created_at=asset.created_at,
@@ -75,6 +77,7 @@ async def list_media(
             job_id=asset.job_id,
             type=asset.type.value,
             url=asset.url,
+            view_url=service.get_viewable_url(asset),
             compressed=asset.compressed,
             opened_by_customer_at=asset.opened_by_customer_at,
             created_at=asset.created_at,

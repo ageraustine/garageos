@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlmodel import Session, select
 from decimal import Decimal
 from app.database import get_db
+from app.api.deps import get_storage_service
+from app.services.storage_service import StorageService
 from app.schemas.link import (
     CustomerJobResponse,
     EstimateApproveRequest,
@@ -49,6 +51,7 @@ STATUS_LABELS = {
 async def get_job_by_token(
     token: str,
     db: Session = Depends(get_db),
+    storage: StorageService = Depends(get_storage_service),
 ):
     """
     Get full job state via magic link token.
@@ -56,7 +59,7 @@ async def get_job_by_token(
     """
     job_service = JobService(db)
     estimate_service = EstimateService(db)
-    media_service = MediaService(db)
+    media_service = MediaService(db, storage)
 
     try:
         job = job_service.get_by_token(token)
@@ -154,13 +157,13 @@ async def get_job_by_token(
                 )
             )
 
-    # Load media assets
+    # Load media assets with viewable URLs
     media_assets = media_service.list_by_job(job.id)
     link_media = [
         LinkMedia(
             id=m.id,
             type=m.type.value,
-            url=m.url,
+            url=media_service.get_viewable_url(m),
             created_at=m.created_at,
         )
         for m in media_assets

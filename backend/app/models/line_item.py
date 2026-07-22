@@ -1,4 +1,5 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Column
+from sqlalchemy import Enum as SAEnum
 from datetime import datetime
 from typing import Optional
 from decimal import Decimal
@@ -22,7 +23,10 @@ class LineItem(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     estimate_id: int = Field(foreign_key="estimates.id", index=True)
-    kind: LineItemKind = Field(default=LineItemKind.CRITICAL)
+    kind: LineItemKind = Field(
+        default=LineItemKind.CRITICAL,
+        sa_column=Column(SAEnum(LineItemKind, values_callable=lambda x: [e.value for e in x]), nullable=False)
+    )
     label: str = Field(max_length=200)
     price: Decimal = Field(max_digits=10, decimal_places=2)
     justification_media_id: Optional[int] = Field(

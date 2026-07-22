@@ -16,6 +16,7 @@ router = APIRouter(prefix="/quotation", tags=["quotation"])
 
 @router.get("/services/pdf")
 async def download_services_quotation(
+    preview: bool = False,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
@@ -67,16 +68,20 @@ async def download_services_quotation(
 
     filename = f"quotation_{chain.name}_{datetime.utcnow().strftime('%Y%m%d')}.pdf"
 
+    # Preview shows inline, download forces attachment
+    disposition = "inline" if preview else f"attachment; filename={filename}"
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        headers={"Content-Disposition": disposition},
     )
 
 
 @router.get("/job/{job_id}/pdf")
 async def download_job_quotation(
     job_id: int,
+    preview: bool = False,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
@@ -184,8 +189,11 @@ async def download_job_quotation(
 
     filename = f"quotation_{job_id}_{datetime.utcnow().strftime('%Y%m%d')}.pdf"
 
+    # Preview shows inline, download forces attachment
+    disposition = "inline" if preview else f"attachment; filename={filename}"
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        headers={"Content-Disposition": disposition},
     )

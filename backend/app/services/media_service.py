@@ -50,6 +50,19 @@ class MediaService:
             self.db.exec(select(MediaAsset).where(MediaAsset.job_id == job_id)).all()
         )
 
+    def get_viewable_url(self, asset: MediaAsset) -> str:
+        """Generate a presigned URL for viewing the media asset."""
+        if not self.storage:
+            return asset.url
+        # Extract object key from stored URL
+        # URL format: http://endpoint/bucket/jobs/123/photo/uuid.jpg
+        # We need: jobs/123/photo/uuid.jpg
+        url_parts = asset.url.split(f"/{self.storage.bucket}/")
+        if len(url_parts) == 2:
+            object_key = url_parts[1]
+            return self.storage.generate_presigned_download_url(object_key)
+        return asset.url
+
     def mark_opened_by_customer(self, id: int) -> MediaAsset:
         """Track customer viewing for Verification Rate trust signal."""
         asset = self.get_by_id(id)

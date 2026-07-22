@@ -30,6 +30,7 @@ class MediaAssetResponse(BaseModel):
     job_id: int
     type: str
     url: str
+    view_url: str  # Presigned URL for viewing
     compressed: bool
     opened_by_customer_at: Optional[datetime]
     created_at: datetime

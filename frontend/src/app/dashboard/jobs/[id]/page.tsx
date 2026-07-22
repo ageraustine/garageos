@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui";
+import { Button, PDFPreviewModal } from "@/components/ui";
 import { api, JobDetail, EmployeeListItem, AssignedEmployee } from "@/lib/api";
 import { fadeInUp } from "@/lib/animations";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,6 +52,9 @@ export default function JobDetailPage({
   // Delete state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // PDF Preview state
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
 
   const canEditAssignments = user && ["hq", "manager", "advisor"].includes(user.role);
   const canDelete = user && ["hq", "manager"].includes(user.role);
@@ -405,14 +408,14 @@ export default function JobDetailPage({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleDownloadQuotation}
-              disabled={downloadingPdf}
+              onClick={() => setShowPdfPreview(true)}
               className="w-full mt-4"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              {downloadingPdf ? "Generating..." : "Download Quotation"}
+              Preview Quotation
             </Button>
           </div>
 
@@ -615,6 +618,15 @@ export default function JobDetailPage({
           </div>
         </div>
       )}
+
+      {/* PDF Preview Modal */}
+      <PDFPreviewModal
+        isOpen={showPdfPreview}
+        onClose={() => setShowPdfPreview(false)}
+        onDownload={handleDownloadQuotation}
+        fetchPdf={() => api.quotation.previewJobPdf(job.id)}
+        title={`Quotation - ${job.plate}`}
+      />
     </motion.div>
   );
 }
