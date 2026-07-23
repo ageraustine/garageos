@@ -71,7 +71,7 @@ def build_estimate_response(
     )
 
 
-@router.post("/", response_model=EstimateResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=EstimateResponse, status_code=status.HTTP_201_CREATED)
 async def create_estimate(
     job_id: int,
     data: EstimateCreate,
