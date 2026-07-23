@@ -5,6 +5,7 @@ from app.models.branch import Branch
 from app.models.employee import Employee, EmployeeRole
 from app.schemas.auth import (
     RegisterRequest,
+    RegisterSellerRequest,
     LoginRequest,
     TokenResponse,
     UserResponse,
@@ -13,6 +14,7 @@ from app.schemas.auth import (
     ChainSettingsUpdate,
     ChainSettingsResponse,
 )
+from app.models.marketplace.seller import MarketplaceSeller
 from app.core.security import hash_pin, verify_pin, create_access_token, create_refresh_token
 from app.core.exceptions import ConflictError, UnauthorizedError, NotFoundError
 from app.config import settings
@@ -100,6 +102,53 @@ class AuthService:
         # Generate tokens
         return self._create_tokens(owner, chain)
 
+    def register_seller(self, data: RegisterSellerRequest) -> TokenResponse:
+        """
+        Register an external marketplace seller.
+
+        Creates:
+        1. Employee record with is_external_seller=True, chain_id=None
+        2. MarketplaceSeller record
+        """
+        # Check phone uniqueness
+        existing_phone = self.db.exec(
+            select(Employee).where(Employee.phone == data.phone)
+        ).first()
+        if existing_phone:
+            raise ConflictError("Phone number already registered")
+
+        # Create external seller employee (no chain)
+        seller_user = Employee(
+            chain_id=None,
+            branch_id=None,
+            role=EmployeeRole.ADVISOR,  # Default role (doesn't matter for external sellers)
+            name=data.name,
+            phone=data.phone,
+            pin_hash=hash_pin(data.pin),
+            email=data.email,
+            is_external_seller=True,
+        )
+        self.db.add(seller_user)
+        self.db.flush()  # Get seller_user.id
+
+        # Create marketplace seller profile
+        marketplace_seller = MarketplaceSeller(
+            seller_type="external",
+            chain_id=None,
+            name=data.name,
+            phone=data.phone,
+            email=data.email,
+            whatsapp=data.whatsapp,
+            city=data.city,
+            is_verified=False,  # External sellers need verification
+        )
+        self.db.add(marketplace_seller)
+        self.db.commit()
+        self.db.refresh(seller_user)
+
+        # Generate tokens
+        return self._create_tokens_for_seller(seller_user)
+
     def login(self, data: LoginRequest) -> TokenResponse:
         """Authenticate user by phone and PIN."""
         employee = self.db.exec(
@@ -111,14 +160,18 @@ class AuthService:
         if not employee or not verify_pin(data.pin, employee.pin_hash):
             raise UnauthorizedError("Invalid phone or PIN")
 
-        # Get chain info
-        chain = self.db.get(Chain, employee.chain_id)
-        if not chain:
-            raise NotFoundError("Chain not found")
-
         # Update last login
         employee.last_login_at = datetime.now(timezone.utc)
         self.db.commit()
+
+        # Handle external sellers (no chain)
+        if employee.is_external_seller:
+            return self._create_tokens_for_seller(employee)
+
+        # Get chain info for regular employees
+        chain = self.db.get(Chain, employee.chain_id)
+        if not chain:
+            raise NotFoundError("Chain not found")
 
         return self._create_tokens(employee, chain)
 
@@ -127,6 +180,10 @@ class AuthService:
         employee = self.db.get(Employee, employee_id)
         if not employee or not employee.is_active:
             raise UnauthorizedError("Invalid user")
+
+        # Handle external sellers
+        if employee.is_external_seller:
+            return self._create_tokens_for_seller(employee)
 
         chain = self.db.get(Chain, employee.chain_id)
         if not chain:
@@ -139,6 +196,21 @@ class AuthService:
         employee = self.db.get(Employee, employee_id)
         if not employee:
             raise NotFoundError("User not found")
+
+        # Handle external sellers
+        if employee.is_external_seller:
+            return UserResponse(
+                id=employee.id,
+                name=employee.name,
+                phone=employee.phone,
+                role="seller",  # External sellers have a "seller" role
+                chain_id=None,
+                chain_name=None,
+                chain_display_name=None,
+                chain_currency="KES",
+                branch_id=None,
+                is_external_seller=True,
+            )
 
         chain = self.db.get(Chain, employee.chain_id)
         if not chain:
@@ -154,6 +226,7 @@ class AuthService:
             chain_display_name=chain.display_name,
             chain_currency=chain.currency,
             branch_id=employee.branch_id,
+            is_external_seller=False,
         )
 
     def update_profile(self, employee_id: int, data: ProfileUpdate) -> UserResponse:
@@ -190,6 +263,24 @@ class AuthService:
             "sub": str(employee.id),
             "chain_id": employee.chain_id,
             "role": employee.role.value,
+        }
+
+        access_token = create_access_token(token_data)
+        refresh_token = create_refresh_token(token_data)
+
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        )
+
+    def _create_tokens_for_seller(self, employee: Employee) -> TokenResponse:
+        """Create access and refresh tokens for an external seller."""
+        token_data = {
+            "sub": str(employee.id),
+            "chain_id": None,
+            "role": "seller",
+            "is_external_seller": True,
         }
 
         access_token = create_access_token(token_data)

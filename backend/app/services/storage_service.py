@@ -155,6 +155,23 @@ class StorageService:
         except S3Error as e:
             raise StorageError(f"Failed to generate upload URL: {e}")
 
+    def generate_generic_upload_url(
+        self, object_key: str, content_type: str = "application/octet-stream"
+    ) -> str:
+        """
+        Generate presigned URL for direct upload with a custom object key.
+        Returns just the presigned_url (object_key is provided by caller).
+        """
+        try:
+            url = self.client.presigned_put_object(
+                self.bucket,
+                object_key,
+                expires=timedelta(seconds=settings.MINIO_PRESIGNED_EXPIRY_SECONDS),
+            )
+            return url
+        except S3Error as e:
+            raise StorageError(f"Failed to generate upload URL: {e}")
+
     def _get_extension(self, content_type: str) -> str:
         """Map content type to file extension."""
         mapping = {

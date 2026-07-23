@@ -48,6 +48,17 @@ class RegisterRequest(BaseModel):
         return v
 
 
+class RegisterSellerRequest(BaseModel):
+    """Request to register as an external marketplace seller."""
+
+    name: str = Field(min_length=2, max_length=100)
+    phone: str = Field(pattern=r"^\+?[0-9]{10,15}$")
+    pin: str = Field(min_length=4, max_length=6, pattern=r"^[0-9]{4,6}$")
+    email: str | None = Field(None, max_length=255)
+    city: str | None = Field(None, max_length=100)
+    whatsapp: str | None = Field(None, max_length=20)
+
+
 class LoginRequest(BaseModel):
     """Request to log in with phone and PIN."""
 
@@ -87,11 +98,12 @@ class UserResponse(BaseModel):
     name: str
     phone: str
     role: str
-    chain_id: int
-    chain_name: str
-    chain_display_name: str
+    chain_id: int | None = None  # Null for external sellers
+    chain_name: str | None = None
+    chain_display_name: str | None = None
     chain_currency: str = "KES"
     branch_id: int | None = None
+    is_external_seller: bool = False
 
 
 class ProfileUpdate(BaseModel):

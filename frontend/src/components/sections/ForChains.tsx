@@ -8,7 +8,7 @@ import { fadeInUp, staggerContainer, staggerItem, viewportOnce, slideInLeft, sli
 
 export function ForChains() {
   return (
-    <section id="for-chains" className="py-20 lg:py-32 bg-gradient-to-b from-white to-gold-50 overflow-hidden">
+    <section id="for-chains" className="py-20 lg:py-32 bg-gradient-to-b from-amber-50/50 via-stone-50 to-white overflow-hidden">
       <Container>
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Content */}
@@ -27,9 +27,9 @@ export function ForChains() {
 
             <motion.h2
               variants={fadeInUp}
-              className="text-3xl lg:text-4xl font-bold text-navy-900 mb-6"
+              className="text-3xl lg:text-5xl font-bold text-navy-900 mb-6"
             >
-              One truth across every branch
+              One truth across every branch.
             </motion.h2>
 
             <motion.p

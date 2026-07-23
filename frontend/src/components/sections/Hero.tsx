@@ -1,211 +1,140 @@
-// Hero component - Single Responsibility: primary value proposition and CTA
+// Hero component - Two products, one revolutionary ecosystem
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Container, Button, ArrowRightIcon } from "@/components/ui";
-import { stats } from "@/lib/data";
-import { fadeInUp, staggerContainer, staggerItem, scaleIn } from "@/lib/animations";
+import { fadeInUp, staggerContainer } from "@/lib/animations";
 
 export function Hero() {
   return (
-    <section className="pt-24 lg:pt-32 pb-16 lg:pb-24 bg-gradient-to-b from-gold-50 via-white to-white overflow-hidden">
+    <section className="pt-24 lg:pt-32 pb-16 bg-gradient-to-b from-stone-50 via-amber-50/30 to-white overflow-hidden">
       <Container>
         <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="max-w-4xl mx-auto text-center"
+          className="max-w-5xl mx-auto text-center"
         >
-          {/* Badge */}
-          <motion.div
-            variants={fadeInUp}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-navy-900 text-gold-400 rounded-full text-sm font-medium mb-8"
-          >
-            <span className="w-2 h-2 bg-gold-400 rounded-full animate-pulse" />
-            Built for East Africa&apos;s leading auto repair chains
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            variants={fadeInUp}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-navy-900 leading-tight mb-6"
-          >
-            Trust, measured at
-            <span className="text-gold-500"> the moment of work</span>
-          </motion.h1>
-
-          {/* Subheadline */}
+          {/* Simple tagline */}
           <motion.p
             variants={fadeInUp}
-            className="text-xl lg:text-2xl text-navy-600 mb-10 max-w-2xl mx-auto"
+            className="text-gold-600 text-lg font-medium mb-6 tracking-wide"
           >
-            Photo-verified repairs. Voice-first diagnostics. Un-gameable Trust
-            Scores. One system serving customers and operators with the same
-            truth.
+            Introducing GarageOS
           </motion.p>
 
-          {/* CTAs */}
+          {/* The headline - Jobs style: simple, bold */}
+          <motion.h1
+            variants={fadeInUp}
+            className="text-4xl sm:text-5xl lg:text-7xl font-bold text-navy-900 leading-tight mb-8"
+          >
+            The auto repair industry
+            <br />
+            <span className="bg-gradient-to-r from-gold-500 to-gold-600 bg-clip-text text-transparent">
+              will never be the same.
+            </span>
+          </motion.h1>
+
+          {/* Simple sub - benefit focused */}
+          <motion.p
+            variants={fadeInUp}
+            className="text-xl lg:text-2xl text-navy-600 mb-16 max-w-3xl mx-auto"
+          >
+            Two revolutionary products. One ecosystem.
+            <br className="hidden sm:block" />
+            Built for East Africa. Ready for the world.
+          </motion.p>
+        </motion.div>
+
+        {/* Two Products - Side by Side */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+          className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-6xl mx-auto"
+        >
+          {/* Platform Card */}
           <motion.div
             variants={fadeInUp}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+            whileHover={{ y: -8, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="relative bg-white rounded-3xl p-8 lg:p-10 border border-stone-200 hover:border-gold-400 hover:shadow-xl hover:shadow-gold-500/10 transition-all overflow-hidden group"
           >
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button size="lg" href="#demo" className="group">
-                Request Demo
-                <ArrowRightIcon className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button variant="outline" size="lg" href="#how-it-works">
-                See How It Works
-              </Button>
-            </motion.div>
+            {/* Subtle gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gold-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+            {/* Icon */}
+            <div className="relative w-16 h-16 bg-gradient-to-br from-gold-400 to-gold-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-gold-500/20">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+
+            <h2 className="relative text-2xl lg:text-3xl font-bold text-navy-900 mb-3">
+              GarageOS Platform
+            </h2>
+            <p className="relative text-gold-600 font-medium mb-4">
+              Trust infrastructure for garage chains
+            </p>
+            <p className="relative text-navy-600 mb-8 leading-relaxed">
+              Photo-verified repairs. Voice diagnostics. Un-gameable Trust Scores.
+              CRM. Analytics. HR. Everything a modern garage needs.
+            </p>
+
+            <Link href="/register">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="relative">
+                <Button size="lg" className="w-full group">
+                  Start Free Trial
+                  <ArrowRightIcon className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
+                </Button>
+              </motion.div>
+            </Link>
           </motion.div>
 
-          {/* Stats */}
+          {/* Marketplace Card */}
           <motion.div
-            variants={staggerContainer}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 pt-8 border-t border-navy-200"
+            variants={fadeInUp}
+            whileHover={{ y: -8, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="relative bg-white rounded-3xl p-8 lg:p-10 border border-stone-200 hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-500/10 transition-all overflow-hidden group"
           >
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                variants={staggerItem}
-                custom={index}
-                className="text-center"
-              >
-                <motion.div
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.5 + index * 0.1, duration: 0.5, type: "spring" }}
-                  className="text-3xl lg:text-4xl font-bold text-navy-900 mb-1"
+            {/* Subtle gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+            {/* Icon */}
+            <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+
+            <h2 className="relative text-2xl lg:text-3xl font-bold text-navy-900 mb-3">
+              GarageOS Marketplace
+            </h2>
+            <p className="relative text-emerald-600 font-medium mb-4">
+              Spare parts. Verified sellers. Direct deals.
+            </p>
+            <p className="relative text-navy-600 mb-8 leading-relaxed">
+              Thousands of parts from verified garages and suppliers.
+              Search by vehicle. Message sellers. No middleman.
+            </p>
+
+            <Link href="/marketplace">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="relative">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full group border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white"
                 >
-                  {stat.value}
-                </motion.div>
-                <div className="text-sm text-navy-500">{stat.label}</div>
+                  Browse Marketplace
+                  <ArrowRightIcon className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
+                </Button>
               </motion.div>
-            ))}
+            </Link>
           </motion.div>
         </motion.div>
       </Container>
-
-      {/* Hero Visual - Abstract garage representation */}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={scaleIn}
-        className="mt-16 relative"
-      >
-        <Container>
-          <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            className="relative bg-navy-900 rounded-2xl overflow-hidden shadow-2xl mx-auto max-w-5xl border border-navy-700"
-          >
-            {/* Mock dashboard UI */}
-            <div className="aspect-video bg-gradient-to-br from-navy-800 to-navy-950 p-6 lg:p-10">
-              {/* Top bar */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                </div>
-                <div className="text-navy-400 text-sm font-mono">
-                  dashboard.garageos.io
-                </div>
-              </div>
-
-              {/* Dashboard content mockup */}
-              <div className="grid grid-cols-3 gap-4 lg:gap-6">
-                {/* Trust Score Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  whileHover={{ scale: 1.02, borderColor: "rgba(245, 158, 11, 0.5)" }}
-                  className="bg-navy-800/50 rounded-xl p-4 lg:p-6 border border-navy-700 transition-colors"
-                >
-                  <div className="text-navy-400 text-xs uppercase tracking-wide mb-2">
-                    Branch Trust Score
-                  </div>
-                  <div className="text-4xl font-bold text-gold-400 mb-1">
-                    94.2
-                  </div>
-                  <div className="text-navy-500 text-sm">+2.1 this week</div>
-                </motion.div>
-
-                {/* Active Jobs */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  whileHover={{ scale: 1.02, borderColor: "rgba(245, 158, 11, 0.5)" }}
-                  className="bg-navy-800/50 rounded-xl p-4 lg:p-6 border border-navy-700 transition-colors"
-                >
-                  <div className="text-navy-400 text-xs uppercase tracking-wide mb-2">
-                    Active Jobs
-                  </div>
-                  <div className="text-4xl font-bold text-white mb-1">
-                    12
-                  </div>
-                  <div className="text-navy-500 text-sm">3 ready for pickup</div>
-                </motion.div>
-
-                {/* Estimate Accuracy */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
-                  whileHover={{ scale: 1.02, borderColor: "rgba(245, 158, 11, 0.5)" }}
-                  className="bg-navy-800/50 rounded-xl p-4 lg:p-6 border border-navy-700 transition-colors"
-                >
-                  <div className="text-navy-400 text-xs uppercase tracking-wide mb-2">
-                    Estimate Accuracy
-                  </div>
-                  <div className="text-4xl font-bold text-emerald-400 mb-1">
-                    97%
-                  </div>
-                  <div className="text-navy-500 text-sm">Last 30 days</div>
-                </motion.div>
-              </div>
-
-              {/* Job progress bars */}
-              <div className="mt-6 space-y-3">
-                {[
-                  { plate: "KDA 123A", status: "Working", progress: 65, color: "bg-gold-500", delay: 0.9 },
-                  { plate: "KBZ 789X", status: "Washing", progress: 90, color: "bg-sky-500", delay: 1.0 },
-                  { plate: "KCE 456M", status: "Ready", progress: 100, color: "bg-emerald-500", delay: 1.1 },
-                ].map((job) => (
-                  <motion.div
-                    key={job.plate}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: job.delay }}
-                    whileHover={{ backgroundColor: "rgba(30, 41, 59, 0.5)" }}
-                    className="bg-navy-800/30 rounded-lg p-3 flex items-center gap-4 cursor-pointer transition-colors"
-                  >
-                    <span className="text-navy-300 font-mono text-sm w-24">
-                      {job.plate}
-                    </span>
-                    <span className="text-navy-500 text-sm w-20">
-                      {job.status}
-                    </span>
-                    <div className="flex-1 bg-navy-700 rounded-full h-2 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${job.progress}%` }}
-                        transition={{ delay: job.delay + 0.2, duration: 0.8, ease: "easeOut" }}
-                        className={`h-full ${job.color}`}
-                      />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </Container>
-      </motion.div>
     </section>
   );
 }

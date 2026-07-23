@@ -61,6 +61,10 @@ class Employee(SQLModel, table=True):
         max_length=500,
         description="URL to profile picture in storage",
     )
+    is_external_seller: bool = Field(
+        default=False,
+        description="True for marketplace-only sellers (not garage employees)",
+    )
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login_at: Optional[datetime] = Field(default=None)

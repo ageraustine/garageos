@@ -8,6 +8,7 @@ from app.schemas.auth import (
     CheckNameRequest,
     CheckNameResponse,
     RegisterRequest,
+    RegisterSellerRequest,
     LoginRequest,
     TokenResponse,
     RefreshTokenRequest,
@@ -53,6 +54,22 @@ async def register(data: RegisterRequest, db: Session = Depends(get_db)):
     service = AuthService(db)
     try:
         return service.register(data)
+    except ConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
+
+
+@router.post(
+    "/register-seller", response_model=TokenResponse, status_code=status.HTTP_201_CREATED
+)
+async def register_seller(data: RegisterSellerRequest, db: Session = Depends(get_db)):
+    """
+    Register as an external marketplace seller.
+    Creates: Employee (external seller) + MarketplaceSeller profile.
+    External sellers can only access marketplace features.
+    """
+    service = AuthService(db)
+    try:
+        return service.register_seller(data)
     except ConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
 

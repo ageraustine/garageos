@@ -10,7 +10,7 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="py-20 lg:py-32 bg-navy-900 text-white overflow-hidden"
+      className="py-20 lg:py-32 bg-gradient-to-b from-white via-amber-50/30 to-stone-50 overflow-hidden"
     >
       <Container>
         {/* Section Header */}
@@ -21,13 +21,16 @@ export function HowItWorks() {
           variants={staggerContainer}
           className="max-w-3xl mx-auto text-center mb-16"
         >
+          <motion.p variants={fadeInUp} className="text-gold-600 font-medium mb-4">
+            How It Works
+          </motion.p>
           <motion.h2
             variants={fadeInUp}
-            className="text-3xl lg:text-4xl font-bold mb-4"
+            className="text-3xl lg:text-5xl font-bold text-navy-900 mb-4"
           >
             From drop-off to drive-away in three steps
           </motion.h2>
-          <motion.p variants={fadeInUp} className="text-lg text-navy-300">
+          <motion.p variants={fadeInUp} className="text-lg text-navy-500">
             Zero friction for customers. Total visibility for operators.
           </motion.p>
         </motion.div>
@@ -53,7 +56,7 @@ export function HowItWorks() {
                   whileInView={{ scaleX: 1 }}
                   viewport={viewportOnce}
                   transition={{ delay: 0.5 + index * 0.2, duration: 0.8 }}
-                  className="hidden lg:block absolute top-12 left-1/2 w-full h-px bg-gradient-to-r from-gold-500 to-transparent origin-left"
+                  className="hidden lg:block absolute top-12 left-1/2 w-full h-px bg-gradient-to-r from-gold-400 to-transparent origin-left"
                 />
               )}
 
@@ -67,8 +70,8 @@ export function HowItWorks() {
               </motion.div>
 
               {/* Content */}
-              <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
-              <p className="text-navy-300 leading-relaxed">
+              <h3 className="text-xl font-bold text-navy-900 mb-3">{step.title}</h3>
+              <p className="text-navy-700 leading-relaxed">
                 {step.description}
               </p>
             </motion.div>
@@ -88,7 +91,7 @@ export function HowItWorks() {
             <motion.div
               whileHover={{ y: -10 }}
               transition={{ type: "spring", stiffness: 300 }}
-              className="bg-navy-800 rounded-[3rem] p-3 shadow-2xl border border-navy-700"
+              className="bg-navy-900 rounded-[3rem] p-3 shadow-2xl"
             >
               <div className="bg-white rounded-[2.5rem] overflow-hidden">
                 {/* Phone screen */}
@@ -130,8 +133,8 @@ export function HowItWorks() {
                             i < 3
                               ? "bg-emerald-500 text-white hover:shadow-lg hover:shadow-emerald-500/25"
                               : i === 3
-                              ? "bg-gold-500 text-navy-900 animate-pulse"
-                              : "bg-navy-100 text-navy-400 hover:bg-navy-200"
+                              ? "bg-gold-500 text-white animate-pulse"
+                              : "bg-stone-100 text-navy-400 hover:bg-stone-200"
                           }`}
                         >
                           {i < 3 ? "✓" : i + 1}
@@ -172,7 +175,7 @@ export function HowItWorks() {
               whileInView={{ opacity: 1 }}
               viewport={viewportOnce}
               transition={{ delay: 0.8 }}
-              className="text-center text-navy-400 mt-6 text-sm"
+              className="text-center text-navy-700 mt-6 text-sm font-medium"
             >
               The Magic Link — no app required
             </motion.p>

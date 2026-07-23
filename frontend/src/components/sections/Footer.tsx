@@ -3,11 +3,11 @@
 import { Container } from "@/components/ui";
 
 const footerLinks = {
-  Product: [
+  Products: [
+    { label: "GarageOS Platform", href: "/register" },
+    { label: "Spare Parts Marketplace", href: "/dashboard/marketplace" },
     { label: "Features", href: "#features" },
     { label: "For Chains", href: "#for-chains" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Security", href: "#security" },
   ],
   Company: [
     { label: "About", href: "#about" },
@@ -42,7 +42,7 @@ export function Footer() {
               <span className="font-bold text-xl">GarageOS</span>
             </a>
             <p className="text-navy-400 text-sm leading-relaxed">
-              Trust infrastructure for East Africa&apos;s auto repair industry.
+              Garage management platform &amp; spare parts marketplace for East Africa&apos;s auto repair industry.
             </p>
           </div>
 

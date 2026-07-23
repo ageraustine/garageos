@@ -1,6 +1,9 @@
 // Barrel export for section components
 export { Header } from "./Header";
 export { Hero } from "./Hero";
+export { KillerFeatures } from "./KillerFeatures";
+export { PlatformSuite } from "./PlatformSuite";
+export { Products } from "./Products";
 export { Features } from "./Features";
 export { HowItWorks } from "./HowItWorks";
 export { ForChains } from "./ForChains";

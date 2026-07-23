@@ -18,14 +18,17 @@ export function Testimonials() {
           variants={staggerContainer}
           className="max-w-3xl mx-auto text-center mb-16"
         >
+          <motion.p variants={fadeInUp} className="text-gold-600 font-medium mb-4">
+            Social Proof
+          </motion.p>
           <motion.h2
             variants={fadeInUp}
-            className="text-3xl lg:text-4xl font-bold text-navy-900 mb-4"
+            className="text-3xl lg:text-5xl font-bold text-navy-900 mb-4"
           >
-            Trusted by leading chains across East Africa
+            The industry is talking.
           </motion.h2>
-          <motion.p variants={fadeInUp} className="text-lg text-navy-600">
-            See what operators are saying about GarageOS.
+          <motion.p variants={fadeInUp} className="text-lg text-navy-500">
+            Hear from operators who transformed their businesses with GarageOS.
           </motion.p>
         </motion.div>
 
@@ -35,7 +38,7 @@ export function Testimonials() {
           whileInView="visible"
           viewport={viewportOnce}
           variants={staggerContainer}
-          className="grid md:grid-cols-3 gap-8"
+          className="grid md:grid-cols-3 gap-6 lg:gap-8"
         >
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -43,7 +46,7 @@ export function Testimonials() {
               variants={staggerItem}
               custom={index}
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
-              className="bg-navy-50 rounded-2xl p-8 relative border border-navy-100 hover:border-gold-200 hover:shadow-lg transition-all cursor-pointer"
+              className="bg-stone-50 rounded-2xl p-8 relative border border-stone-200 hover:border-gold-300 hover:shadow-lg transition-all cursor-pointer"
             >
               {/* Quote mark */}
               <motion.div
@@ -68,7 +71,7 @@ export function Testimonials() {
                   transition={{ type: "spring", stiffness: 400 }}
                   className="w-12 h-12 bg-gradient-to-br from-gold-400 to-gold-600 rounded-full flex items-center justify-center shadow-lg shadow-gold-500/25"
                 >
-                  <span className="text-navy-900 font-semibold">
+                  <span className="text-white font-semibold">
                     {testimonial.author
                       .split(" ")
                       .map((n) => n[0])

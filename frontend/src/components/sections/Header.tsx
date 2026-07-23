@@ -9,7 +9,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-navy-100">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200">
       <Container>
         <nav className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
@@ -36,6 +36,12 @@ export function Header() {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-4">
             <a
+              href="/marketplace"
+              className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+            >
+              Marketplace
+            </a>
+            <a
               href="/login"
               className="text-navy-600 hover:text-navy-900 font-medium transition-colors"
             >
@@ -55,7 +61,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-navy-100">
+          <div className="lg:hidden py-4 border-t border-stone-200 bg-white">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <a
@@ -67,8 +73,15 @@ export function Header() {
                   {link.label}
                 </a>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-navy-100">
-                <Button variant="outline" size="sm" href="/login">
+              <div className="flex flex-col gap-2 pt-4 border-t border-stone-200">
+                <a
+                  href="/marketplace"
+                  className="text-emerald-600 hover:text-emerald-700 font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Marketplace
+                </a>
+                <Button variant="outline" size="sm" href="/login" className="border-navy-300 text-navy-700 hover:bg-navy-50">
                   Log In
                 </Button>
                 <Button size="sm" href="/register">Get Started</Button>

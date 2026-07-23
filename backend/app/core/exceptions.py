@@ -22,3 +22,9 @@ class NotFoundError(AppException):
     """Resource not found (404)."""
 
     pass
+
+
+class ForbiddenError(AppException):
+    """Permission denied (403)."""
+
+    pass

@@ -5,12 +5,19 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 
-const NAV_ITEMS = [
+// Full navigation for garage employees
+const GARAGE_NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: "home" },
   { href: "/dashboard/jobs", label: "Jobs", icon: "briefcase" },
   { href: "/dashboard/customers", label: "Customers", icon: "contacts" },
   { href: "/dashboard/services", label: "Services", icon: "settings" },
+  { href: "/dashboard/marketplace", label: "Marketplace", icon: "shop" },
   { href: "/dashboard/analytics", label: "Analytics", icon: "chart" },
+];
+
+// Limited navigation for external sellers (marketplace only)
+const SELLER_NAV_ITEMS = [
+  { href: "/dashboard/marketplace", label: "My Listings", icon: "shop" },
 ];
 
 const HR_NAV_ITEMS = [
@@ -94,6 +101,11 @@ const ICONS: Record<string, JSX.Element> = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     </svg>
   ),
+  shop: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  ),
 };
 
 export default function DashboardLayout({
@@ -112,6 +124,13 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Redirect external sellers from non-marketplace pages to marketplace
+  useEffect(() => {
+    if (user?.is_external_seller && !pathname.startsWith("/dashboard/marketplace") && pathname !== "/dashboard/profile") {
+      router.push("/dashboard/marketplace");
+    }
+  }, [user, pathname, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-navy-50">
@@ -128,6 +147,10 @@ export default function DashboardLayout({
     logout();
     router.push("/");
   };
+
+  // External sellers only see marketplace features
+  const isExternalSeller = user.is_external_seller;
+  const NAV_ITEMS = isExternalSeller ? SELLER_NAV_ITEMS : GARAGE_NAV_ITEMS;
 
   return (
     <div className="min-h-screen bg-navy-50 flex">
@@ -154,7 +177,9 @@ export default function DashboardLayout({
               </div>
               <div>
                 <span className="text-lg font-bold text-white">GarageOS</span>
-                <p className="text-xs text-navy-400">@{user.chain_name}</p>
+                <p className="text-xs text-navy-400">
+                  {isExternalSeller ? "Marketplace Seller" : `@${user.chain_name}`}
+                </p>
               </div>
             </Link>
           </div>
@@ -181,8 +206,8 @@ export default function DashboardLayout({
               );
             })}
 
-            {/* HR Section */}
-            {(user.role === "hq" || user.role === "manager") && (
+            {/* HR Section - only for garage managers/hq, not external sellers */}
+            {!isExternalSeller && (user.role === "hq" || user.role === "manager") && (
               <>
                 <div className="pt-4 pb-2">
                   <p className="px-4 text-xs font-semibold text-navy-500 uppercase tracking-wider">
@@ -245,7 +270,9 @@ export default function DashboardLayout({
                 <p className="text-sm font-medium text-white truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-navy-400 capitalize">{user.role}</p>
+                <p className="text-xs text-navy-400 capitalize">
+                  {isExternalSeller ? "Seller" : user.role}
+                </p>
               </div>
             </div>
             <button
@@ -271,7 +298,7 @@ export default function DashboardLayout({
             </svg>
           </button>
           <h1 className="text-lg font-semibold text-navy-900">
-            {user.chain_display_name}
+            {isExternalSeller ? "Marketplace" : user.chain_display_name}
           </h1>
         </header>
 
