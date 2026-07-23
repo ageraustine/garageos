@@ -164,6 +164,11 @@ export default function ProfilePage() {
             <ChainSettingsSection isHQ={user.role === "hq"} onSuccess={() => setSuccess("Settings updated")} />
           )}
 
+          {/* Public Profile (HQ only) */}
+          {user.role === "hq" && (
+            <PublicProfileSection onSuccess={() => setSuccess("Public profile updated")} />
+          )}
+
           {/* Danger Zone */}
           <div className="bg-white rounded-xl p-6 border border-red-200 shadow-sm">
             <h2 className="text-lg font-semibold text-red-700 mb-4">Danger Zone</h2>
@@ -456,6 +461,376 @@ function ChainSettingsSection({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function PublicProfileSection({ onSuccess }: { onSuccess: () => void }) {
+  const [settings, setSettings] = useState<ChainSettingsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  // Form state
+  const [isPublic, setIsPublic] = useState(false);
+  const [tagline, setTagline] = useState("");
+  const [description, setDescription] = useState("");
+  const [yearEstablished, setYearEstablished] = useState<number | "">("");
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [newSpecialty, setNewSpecialty] = useState("");
+  const [phone, setPhone] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [website, setWebsite] = useState("");
+  const [operatingHours, setOperatingHours] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    api.auth.getChainSettings()
+      .then((data) => {
+        setSettings(data);
+        setIsPublic(data.is_public || false);
+        setTagline(data.tagline || "");
+        setDescription(data.description || "");
+        setYearEstablished(data.year_established || "");
+        setSpecialties(data.specialties || []);
+        setPhone(data.phone || "");
+        setWhatsapp(data.whatsapp || "");
+        setEmail(data.email || "");
+        setAddress(data.address || "");
+        setCity(data.city || "");
+        setWebsite(data.website || "");
+        setOperatingHours(data.operating_hours || {});
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to load settings");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+
+    try {
+      const updated = await api.auth.updateChainSettings({
+        is_public: isPublic,
+        tagline: tagline || undefined,
+        description: description || undefined,
+        year_established: yearEstablished || undefined,
+        specialties: specialties.length > 0 ? specialties : undefined,
+        phone: phone || undefined,
+        whatsapp: whatsapp || undefined,
+        email: email || undefined,
+        address: address || undefined,
+        city: city || undefined,
+        website: website || undefined,
+        operating_hours: Object.keys(operatingHours).length > 0 ? operatingHours : undefined,
+      });
+      setSettings(updated);
+      onSuccess();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addSpecialty = () => {
+    if (newSpecialty.trim() && !specialties.includes(newSpecialty.trim())) {
+      setSpecialties([...specialties, newSpecialty.trim()]);
+      setNewSpecialty("");
+    }
+  };
+
+  const removeSpecialty = (s: string) => {
+    setSpecialties(specialties.filter((x) => x !== s));
+  };
+
+  const updateHours = (day: string, value: string) => {
+    if (value) {
+      setOperatingHours({ ...operatingHours, [day]: value });
+    } else {
+      const newHours = { ...operatingHours };
+      delete newHours[day];
+      setOperatingHours(newHours);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl p-6 border border-navy-100 shadow-sm">
+        <h2 className="text-lg font-semibold text-navy-900 mb-4">Public Profile</h2>
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-navy-100 rounded w-1/4"></div>
+          <div className="h-8 bg-navy-100 rounded w-1/2"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl p-6 border border-navy-100 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-navy-900">Public Profile</h2>
+          <p className="text-sm text-navy-500">Make your garage visible to the public</p>
+        </div>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-sm text-gold-600 hover:text-gold-700"
+        >
+          {expanded ? "Collapse" : "Expand"}
+        </button>
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700">
+          {error}
+        </div>
+      )}
+
+      {/* Public Toggle - Always visible */}
+      <div className="flex items-center justify-between py-4 border-b border-navy-100">
+        <div>
+          <p className="font-medium text-navy-900">Public Listing</p>
+          <p className="text-sm text-navy-500">
+            {isPublic ? "Your garage is visible at " : "Enable to show at "}
+            <a
+              href={`/garages/${settings?.name}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold-600 hover:underline"
+            >
+              /garages/{settings?.name}
+            </a>
+          </p>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isPublic}
+            onChange={(e) => setIsPublic(e.target.checked)}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-navy-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-navy-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-500"></div>
+        </label>
+      </div>
+
+      {expanded && (
+        <div className="space-y-6 pt-6">
+          {/* Tagline */}
+          <div>
+            <label className="block text-sm font-medium text-navy-700 mb-1">
+              Tagline
+              <span className="text-navy-400 font-normal ml-1">(short catchy slogan)</span>
+            </label>
+            <input
+              type="text"
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+              placeholder="Your car deserves the best"
+              maxLength={150}
+              className="w-full px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-navy-700 mb-1">
+              About
+              <span className="text-navy-400 font-normal ml-1">(describe your garage)</span>
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Tell customers about your garage, services, and what makes you special..."
+              rows={4}
+              maxLength={5000}
+              className="w-full px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+            />
+          </div>
+
+          {/* Year Established */}
+          <div>
+            <label className="block text-sm font-medium text-navy-700 mb-1">Year Established</label>
+            <input
+              type="number"
+              value={yearEstablished}
+              onChange={(e) => setYearEstablished(e.target.value ? parseInt(e.target.value) : "")}
+              placeholder="2010"
+              min={1900}
+              max={new Date().getFullYear()}
+              className="w-32 px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+            />
+          </div>
+
+          {/* Specialties */}
+          <div>
+            <label className="block text-sm font-medium text-navy-700 mb-1">
+              Specialties
+              <span className="text-navy-400 font-normal ml-1">(e.g., German Cars, Fleet Service)</span>
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {specialties.map((s) => (
+                <span
+                  key={s}
+                  className="inline-flex items-center gap-1 bg-navy-100 text-navy-700 px-3 py-1 rounded-full text-sm"
+                >
+                  {s}
+                  <button
+                    onClick={() => removeSpecialty(s)}
+                    className="text-navy-400 hover:text-red-500"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newSpecialty}
+                onChange={(e) => setNewSpecialty(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSpecialty())}
+                placeholder="Add specialty"
+                className="flex-1 px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+              />
+              <Button variant="secondary" size="sm" onClick={addSpecialty}>
+                Add
+              </Button>
+            </div>
+          </div>
+
+          {/* Contact Info */}
+          <div className="border-t border-navy-100 pt-6">
+            <h3 className="text-sm font-semibold text-navy-900 mb-4">Contact Information</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-navy-600 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+254 700 000 000"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-navy-600 mb-1">WhatsApp</label>
+                <input
+                  type="tel"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  placeholder="+254 700 000 000"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-navy-600 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="info@yourgarage.com"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-navy-600 mb-1">Website</label>
+                <input
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://yourgarage.com"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Location */}
+          <div className="border-t border-navy-100 pt-6">
+            <h3 className="text-sm font-semibold text-navy-900 mb-4">Location</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm text-navy-600 mb-1">Address</label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="123 Main Street, Industrial Area"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-navy-600 mb-1">City</label>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Nairobi"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Operating Hours */}
+          <div className="border-t border-navy-100 pt-6">
+            <h3 className="text-sm font-semibold text-navy-900 mb-4">Operating Hours</h3>
+            <div className="space-y-3">
+              {[
+                { key: "mon", label: "Monday" },
+                { key: "tue", label: "Tuesday" },
+                { key: "wed", label: "Wednesday" },
+                { key: "thu", label: "Thursday" },
+                { key: "fri", label: "Friday" },
+                { key: "sat", label: "Saturday" },
+                { key: "sun", label: "Sunday" },
+              ].map(({ key, label }) => (
+                <div key={key} className="flex items-center gap-4">
+                  <span className="w-24 text-sm text-navy-600">{label}</span>
+                  <input
+                    type="text"
+                    value={operatingHours[key] || ""}
+                    onChange={(e) => updateHours(key, e.target.value)}
+                    placeholder="8:00 - 18:00"
+                    className="flex-1 max-w-[200px] px-3 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500 text-sm"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="border-t border-navy-100 pt-6 flex justify-end">
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Save Public Profile"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Save for just public toggle */}
+      {!expanded && (
+        <div className="pt-4">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

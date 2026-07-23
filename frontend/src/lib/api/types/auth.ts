@@ -26,6 +26,7 @@ export interface UserResponse {
 }
 
 export interface ChainSettingsUpdate {
+  // Basic settings
   display_name?: string;
   currency?: string;
   branding?: {
@@ -33,6 +34,35 @@ export interface ChainSettingsUpdate {
     primary_color?: string;
     accent_color?: string;
   } | null;
+
+  // Public profile - Hero
+  tagline?: string;
+  cover_image_url?: string;
+
+  // Public profile - About
+  description?: string;
+  year_established?: number;
+  specialties?: string[];
+
+  // Public profile - Contact
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+
+  // Public profile - Location
+  address?: string;
+  city?: string;
+
+  // Public profile - Online presence
+  website?: string;
+  social_links?: Record<string, string>;
+
+  // Public profile - Gallery & Hours
+  gallery_images?: string[];
+  operating_hours?: Record<string, string>;
+
+  // Visibility
+  is_public?: boolean;
 }
 
 export interface ChainSettingsResponse {
@@ -45,6 +75,24 @@ export interface ChainSettingsResponse {
     primary_color?: string;
     accent_color?: string;
   } | null;
+
+  // Public profile fields
+  tagline?: string;
+  cover_image_url?: string;
+  description?: string;
+  year_established?: number;
+  specialties?: string[];
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  website?: string;
+  social_links?: Record<string, string>;
+  gallery_images?: string[];
+  operating_hours?: Record<string, string>;
+  is_public: boolean;
+  is_featured: boolean;
 }
 
 export interface RegisterData {
