@@ -293,7 +293,7 @@ class AuthService:
         )
 
     def get_chain_settings(self, chain_id: int) -> ChainSettingsResponse:
-        """Get chain settings."""
+        """Get chain settings including public profile."""
         chain = self.db.get(Chain, chain_id)
         if not chain:
             raise NotFoundError("Chain not found")
@@ -304,16 +304,34 @@ class AuthService:
             display_name=chain.display_name,
             currency=chain.currency,
             branding=chain.branding,
+            # Public profile fields
+            tagline=chain.tagline,
+            cover_image_url=chain.cover_image_url,
+            description=chain.description,
+            year_established=chain.year_established,
+            specialties=chain.specialties,
+            phone=chain.phone,
+            whatsapp=chain.whatsapp,
+            email=chain.email,
+            address=chain.address,
+            city=chain.city,
+            website=chain.website,
+            social_links=chain.social_links,
+            gallery_images=chain.gallery_images,
+            operating_hours=chain.operating_hours,
+            is_public=chain.is_public,
+            is_featured=chain.is_featured,
         )
 
     def update_chain_settings(
         self, chain_id: int, data: ChainSettingsUpdate
     ) -> ChainSettingsResponse:
-        """Update chain settings (HQ only)."""
+        """Update chain settings including public profile (HQ only)."""
         chain = self.db.get(Chain, chain_id)
         if not chain:
             raise NotFoundError("Chain not found")
 
+        # Basic settings
         if data.display_name is not None:
             chain.display_name = data.display_name
         if data.currency is not None:
@@ -321,14 +339,52 @@ class AuthService:
         if data.branding is not None:
             chain.branding = data.branding
 
+        # Public profile - Hero
+        if data.tagline is not None:
+            chain.tagline = data.tagline
+        if data.cover_image_url is not None:
+            chain.cover_image_url = data.cover_image_url
+
+        # Public profile - About
+        if data.description is not None:
+            chain.description = data.description
+        if data.year_established is not None:
+            chain.year_established = data.year_established
+        if data.specialties is not None:
+            chain.specialties = data.specialties
+
+        # Public profile - Contact
+        if data.phone is not None:
+            chain.phone = data.phone
+        if data.whatsapp is not None:
+            chain.whatsapp = data.whatsapp
+        if data.email is not None:
+            chain.email = data.email
+
+        # Public profile - Location
+        if data.address is not None:
+            chain.address = data.address
+        if data.city is not None:
+            chain.city = data.city
+
+        # Public profile - Online presence
+        if data.website is not None:
+            chain.website = data.website
+        if data.social_links is not None:
+            chain.social_links = data.social_links
+
+        # Public profile - Gallery & Hours
+        if data.gallery_images is not None:
+            chain.gallery_images = data.gallery_images
+        if data.operating_hours is not None:
+            chain.operating_hours = data.operating_hours
+
+        # Visibility
+        if data.is_public is not None:
+            chain.is_public = data.is_public
+
         self.db.add(chain)
         self.db.commit()
         self.db.refresh(chain)
 
-        return ChainSettingsResponse(
-            id=chain.id,
-            name=chain.name,
-            display_name=chain.display_name,
-            currency=chain.currency,
-            branding=chain.branding,
-        )
+        return self.get_chain_settings(chain_id)

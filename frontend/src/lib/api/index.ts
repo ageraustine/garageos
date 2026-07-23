@@ -31,6 +31,7 @@ import { hrApi } from "./endpoints/hr";
 import { analyticsApi } from "./endpoints/analytics";
 import { expensesApi } from "./endpoints/expenses";
 import { marketplaceApi } from "./endpoints/marketplace";
+import { garagesApi } from "./endpoints/garages";
 
 // Combined API object for backward compatibility
 export const api = {
@@ -49,6 +50,7 @@ export const api = {
   analytics: analyticsApi,
   expenses: expensesApi,
   marketplace: marketplaceApi,
+  garages: garagesApi,
 };
 
 // Also export individual APIs for direct imports
@@ -68,4 +70,5 @@ export {
   analyticsApi,
   expensesApi,
   marketplaceApi,
+  garagesApi,
 };

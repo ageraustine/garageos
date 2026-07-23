@@ -15,3 +15,4 @@ export * from "./hr";
 export * from "./analytics";
 export * from "./expenses";
 export * from "./marketplace";
+export * from "./garages";

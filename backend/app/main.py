@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api.routes import auth, customers, vehicles, jobs, estimates, media, payments, link, services, employees, mpesa_callback, quotation, branches, trust_score, analytics, expenses
+from app.api.routes import auth, customers, vehicles, jobs, estimates, media, payments, link, services, employees, mpesa_callback, quotation, branches, trust_score, analytics, expenses, public
 from app.api.routes.hr import router as hr_router
 from app.api.routes.marketplace import router as marketplace_router
 
@@ -46,6 +46,7 @@ app.include_router(analytics.router, prefix=settings.API_PREFIX)
 app.include_router(expenses.router, prefix=settings.API_PREFIX)
 app.include_router(hr_router, prefix=settings.API_PREFIX)
 app.include_router(marketplace_router, prefix=settings.API_PREFIX)
+app.include_router(public.router, prefix=settings.API_PREFIX)  # Public garage profiles
 
 
 @app.get("/health")

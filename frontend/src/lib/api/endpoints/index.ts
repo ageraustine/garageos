@@ -15,3 +15,4 @@ export { hrApi } from "./hr";
 export { analyticsApi } from "./analytics";
 export { expensesApi } from "./expenses";
 export { marketplaceApi } from "./marketplace";
+export { garagesApi } from "./garages";

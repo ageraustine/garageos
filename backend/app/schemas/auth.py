@@ -120,21 +120,69 @@ class ChangePinRequest(BaseModel):
 
 
 class ChainSettingsUpdate(BaseModel):
-    """Request to update chain settings."""
+    """Request to update chain settings (including public profile)."""
 
+    # Basic info
     display_name: str | None = Field(None, min_length=2, max_length=100)
     currency: str | None = Field(None, max_length=10)
     branding: dict | None = None  # {logo_url, primary_color, accent_color}
 
+    # Public profile - Hero
+    tagline: str | None = Field(None, max_length=150)
+    cover_image_url: str | None = Field(None, max_length=500)
+
+    # Public profile - About
+    description: str | None = Field(None, max_length=5000)
+    year_established: int | None = None
+    specialties: list[str] | None = None
+
+    # Public profile - Contact
+    phone: str | None = Field(None, max_length=20)
+    whatsapp: str | None = Field(None, max_length=20)
+    email: str | None = Field(None, max_length=200)
+
+    # Public profile - Location
+    address: str | None = Field(None, max_length=500)
+    city: str | None = Field(None, max_length=100)
+
+    # Public profile - Online presence
+    website: str | None = Field(None, max_length=200)
+    social_links: dict | None = None  # {facebook, instagram, twitter, etc.}
+
+    # Public profile - Gallery & Hours
+    gallery_images: list[str] | None = None
+    operating_hours: dict | None = None  # {mon: "8:00-18:00", ...}
+
+    # Visibility
+    is_public: bool | None = None
+
 
 class ChainSettingsResponse(BaseModel):
-    """Response containing chain settings."""
+    """Response containing chain settings (including public profile)."""
 
     id: int
     name: str
     display_name: str
     currency: str
     branding: dict | None = None
+
+    # Public profile fields
+    tagline: str | None = None
+    cover_image_url: str | None = None
+    description: str | None = None
+    year_established: int | None = None
+    specialties: list[str] | None = None
+    phone: str | None = None
+    whatsapp: str | None = None
+    email: str | None = None
+    address: str | None = None
+    city: str | None = None
+    website: str | None = None
+    social_links: dict | None = None
+    gallery_images: list[str] | None = None
+    operating_hours: dict | None = None
+    is_public: bool = False
+    is_featured: bool = False
 
 
 class LogoUploadRequest(BaseModel):
