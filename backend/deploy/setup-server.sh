@@ -19,8 +19,20 @@ APP_USER="paperspace"
 APP_DIR="/home/$APP_USER/garageos"
 
 echo ""
-echo "[1/6] Updating system packages..."
-apt-get update
+echo "[1/6] Fixing apt_pkg and updating system packages..."
+# Fix apt_pkg module issue (common on Ubuntu with multiple Python versions)
+if ! python3 -c "import apt_pkg" 2>/dev/null; then
+    echo "Fixing apt_pkg module..."
+    apt-get install -y --reinstall python3-apt 2>/dev/null || true
+    # Create symlink if needed
+    cd /usr/lib/python3/dist-packages/
+    if [ -f apt_pkg.cpython-*-x86_64-linux-gnu.so ]; then
+        ln -sf apt_pkg.cpython-*-x86_64-linux-gnu.so apt_pkg.so 2>/dev/null || true
+    fi
+    cd - > /dev/null
+fi
+
+apt-get update || true
 apt-get upgrade -y
 
 echo ""
