@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # Frontend URL (for magic links in SMS)
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # CORS - comma-separated list of allowed origins
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+
     class Config:
         env_file = ".env"
         extra = "ignore"

@@ -11,14 +11,18 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# CORS middleware
+# CORS middleware - parse origins from config (comma-separated)
+# Use "*" to allow all origins, or specify domains like:
+# "http://localhost:3000,https://your-app.vercel.app"
+cors_origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",") if origin.strip()]
+
+# Check if wildcard is used
+allow_all_origins = "*" in cors_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"] if allow_all_origins else cors_origins,
+    allow_credentials=not allow_all_origins,  # credentials not allowed with "*"
     allow_methods=["*"],
     allow_headers=["*"],
 )

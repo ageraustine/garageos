@@ -1,0 +1,33 @@
+[Unit]
+Description=GarageOS Backend API
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=paperspace
+Group=paperspace
+WorkingDirectory=/home/paperspace/garageos/backend
+
+# Environment
+Environment="PATH=/home/paperspace/garageos/backend/venv/bin:/usr/local/bin:/usr/bin:/bin"
+EnvironmentFile=/home/paperspace/garageos/backend/.env
+
+# Start command
+ExecStart=/home/paperspace/garageos/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+
+# Restart policy
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=garageos-backend
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

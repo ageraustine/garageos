@@ -1,0 +1,24 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Paperspace Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 184.105.217.226
+          username: paperspace
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/paperspace/garageos/backend
+            ./deploy/deploy.sh main
