@@ -4,6 +4,10 @@
 import type { Feature, Stat, Step, Testimonial, NavLink } from "./types";
 
 export const navLinks: NavLink[] = [
+  { label: "Products", href: "#products" },
+  { label: "Features", href: "#features" },
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "For Chains", href: "#for-chains" },
   { label: "Garages", href: "/garages" },
 ];
 
