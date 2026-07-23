@@ -46,7 +46,10 @@ export async function refreshToken(): Promise<boolean> {
     try {
       const response = await fetch(`${API_BASE}/auth/refresh`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
         body: JSON.stringify({ refresh_token: refresh }),
       });
 
@@ -79,6 +82,7 @@ export async function request<T>(
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
     ...(token && !skipAuth && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
@@ -97,6 +101,7 @@ export async function request<T>(
       const newToken = localStorage.getItem("access_token");
       const retryHeaders: HeadersInit = {
         "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
         ...(newToken && { Authorization: `Bearer ${newToken}` }),
         ...options.headers,
       };
