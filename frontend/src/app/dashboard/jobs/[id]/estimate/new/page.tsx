@@ -122,7 +122,7 @@ export default function NewEstimatePage({
     setLineItems(lineItems.filter((_, i) => i !== index));
   };
 
-  const updateLineItem = (index: number, field: string, value: string | number) => {
+  const updateLineItem = (index: number, field: string, value: string | number | boolean) => {
     const updated = [...lineItems];
     updated[index] = { ...updated[index], [field]: value };
     setLineItems(updated);
