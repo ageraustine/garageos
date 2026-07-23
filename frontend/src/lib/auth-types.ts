@@ -11,6 +11,7 @@ export interface User {
   chain_display_name: string;
   chain_currency: string;
   branch_id: number | null;
+  is_external_seller?: boolean;
 }
 
 export interface AuthState {
