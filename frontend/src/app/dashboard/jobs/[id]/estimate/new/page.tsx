@@ -46,6 +46,7 @@ export default function NewEstimatePage({
             kind: item.kind as "critical" | "optional",
             label: item.label,
             price: parseFloat(item.price),
+            is_labor: item.is_labor,
           }));
           setLineItems(existingItems);
           setIsEditing(true);
@@ -65,6 +66,7 @@ export default function NewEstimatePage({
             kind: "critical",
             label: item.name,
             price: item.price,
+            is_labor: item.is_labor,
           });
         }
       }
@@ -89,6 +91,7 @@ export default function NewEstimatePage({
         kind: "critical",
         label: item.name,
         price: item.price,
+        is_labor: item.is_labor,
       },
     ]);
   };
@@ -104,6 +107,7 @@ export default function NewEstimatePage({
           kind: "critical",
           label: item.name,
           price: item.price,
+          is_labor: item.is_labor,
         });
       }
     }
@@ -111,7 +115,7 @@ export default function NewEstimatePage({
   };
 
   const addLineItem = (kind: "critical" | "optional") => {
-    setLineItems([...lineItems, { kind, label: "", price: 0 }]);
+    setLineItems([...lineItems, { kind, label: "", price: 0, is_labor: false }]);
   };
 
   const removeLineItem = (index: number) => {
@@ -153,6 +157,10 @@ export default function NewEstimatePage({
   const optionalItems = lineItems.filter((item) => item.kind === "optional");
   const criticalTotal = criticalItems.reduce((sum, item) => sum + (item.price || 0), 0);
   const optionalTotal = optionalItems.reduce((sum, item) => sum + (item.price || 0), 0);
+
+  // Labor vs Parts breakdown
+  const laborTotal = lineItems.filter((item) => item.is_labor).reduce((sum, item) => sum + (item.price || 0), 0);
+  const partsTotal = lineItems.filter((item) => !item.is_labor).reduce((sum, item) => sum + (item.price || 0), 0);
 
   // Get all template items for display
   const hasTemplates = job?.services.some((s) => (s.quotation_items?.length || 0) > 0) || false;
@@ -247,14 +255,19 @@ export default function NewEstimatePage({
                                 type="button"
                                 onClick={() => addFromTemplate(item, service.service_name)}
                                 disabled={isAdded}
-                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-2 ${
                                   isAdded
                                     ? "bg-green-100 text-green-700 cursor-not-allowed"
                                     : "bg-white text-navy-700 hover:bg-gold-100 border border-gold-200"
                                 }`}
                               >
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                                  item.is_labor ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
+                                }`}>
+                                  {item.is_labor ? "Labor" : "Parts"}
+                                </span>
                                 {item.name}
-                                <span className="ml-2 text-xs opacity-75">
+                                <span className="text-xs opacity-75">
                                   {currency} {item.price.toLocaleString()}
                                 </span>
                                 {isAdded && " ✓"}
@@ -289,6 +302,18 @@ export default function NewEstimatePage({
                 {lineItems.map((item, index) =>
                   item.kind === "critical" ? (
                     <div key={index} className="flex gap-3 items-start">
+                      <button
+                        type="button"
+                        onClick={() => updateLineItem(index, "is_labor", !item.is_labor)}
+                        className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                          item.is_labor
+                            ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                        title="Toggle Labor/Parts"
+                      >
+                        {item.is_labor ? "Labor" : "Parts"}
+                      </button>
                       <div className="flex-1">
                         <input
                           type="text"
@@ -352,6 +377,18 @@ export default function NewEstimatePage({
                 {lineItems.map((item, index) =>
                   item.kind === "optional" ? (
                     <div key={index} className="flex gap-3 items-start">
+                      <button
+                        type="button"
+                        onClick={() => updateLineItem(index, "is_labor", !item.is_labor)}
+                        className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                          item.is_labor
+                            ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                        title="Toggle Labor/Parts"
+                      >
+                        {item.is_labor ? "Labor" : "Parts"}
+                      </button>
                       <div className="flex-1">
                         <input
                           type="text"
@@ -423,6 +460,20 @@ export default function NewEstimatePage({
                   <dd className="font-medium text-navy-900">
                     {currency} {optionalTotal.toLocaleString()}
                   </dd>
+                </div>
+                <div className="border-t border-navy-100 pt-3 space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <dt className="text-blue-600">Labor</dt>
+                    <dd className="text-blue-600">
+                      {currency} {laborTotal.toLocaleString()}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <dt className="text-gray-500">Parts</dt>
+                    <dd className="text-gray-500">
+                      {currency} {partsTotal.toLocaleString()}
+                    </dd>
+                  </div>
                 </div>
                 <div className="border-t border-navy-100 pt-3 flex justify-between">
                   <dt className="font-medium text-navy-900">Total</dt>

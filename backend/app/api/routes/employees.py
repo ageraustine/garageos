@@ -2,14 +2,29 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session, select
 from typing import List, Optional
 from app.database import get_db
-from app.api.deps import get_current_user
-from app.schemas.employee import EmployeeCreate, EmployeeUpdate, EmployeeResponse, EmployeeListItem
+from app.api.deps import get_current_user, get_storage_service
+from app.schemas.employee import (
+    EmployeeCreate, EmployeeUpdate, EmployeeResponse, EmployeeListItem,
+    DocumentUploadRequest, DocumentUploadResponse, DocumentConfirmRequest,
+    EmployeeDocumentResponse, ProfilePictureUploadRequest, ProfilePictureUploadResponse,
+    ProfilePictureConfirmRequest,
+)
 from app.schemas.auth import UserResponse
-from app.models.employee import Employee, EmployeeRole
+from app.models.employee import Employee, EmployeeRole, EmployeeDocument, DocumentType
 from app.models.branch import Branch
 from app.core.security import hash_pin
+from app.services.storage_service import StorageService
 
 router = APIRouter(prefix="/employees", tags=["employees"])
+
+DOCUMENT_TYPE_LABELS = {
+    "national_id": "National ID",
+    "passport": "Passport",
+    "police_clearance": "Police Clearance",
+    "driving_license": "Driving License",
+    "certificate": "Certificate",
+    "other": "Other Document",
+}
 
 ROLE_LABELS = {
     "advisor": "Service Advisor",
@@ -58,6 +73,8 @@ async def list_employees(
                 role_label=ROLE_LABELS.get(emp.role.value, emp.role.value),
                 branch_id=emp.branch_id,
                 branch_name=branch_name,
+                email=emp.email,
+                profile_picture_url=emp.profile_picture_url,
                 is_active=emp.is_active,
                 created_at=emp.created_at,
             )
@@ -113,6 +130,8 @@ async def create_employee(
         name=data.name,
         phone=data.phone,
         pin_hash=hash_pin(data.pin),
+        email=data.email,
+        id_number=data.id_number,
     )
     db.add(employee)
     db.commit()
@@ -125,6 +144,9 @@ async def create_employee(
         role=employee.role.value,
         branch_id=employee.branch_id,
         branch_name=branch_name,
+        email=employee.email,
+        id_number=employee.id_number,
+        profile_picture_url=employee.profile_picture_url,
         is_active=employee.is_active,
         created_at=employee.created_at,
         last_login_at=employee.last_login_at,
@@ -154,6 +176,9 @@ async def get_employee(
         role=employee.role.value,
         branch_id=employee.branch_id,
         branch_name=branch_name,
+        email=employee.email,
+        id_number=employee.id_number,
+        profile_picture_url=employee.profile_picture_url,
         is_active=employee.is_active,
         created_at=employee.created_at,
         last_login_at=employee.last_login_at,
@@ -200,6 +225,10 @@ async def update_employee(
         employee.branch_id = data.branch_id
     if data.is_active is not None:
         employee.is_active = data.is_active
+    if data.email is not None:
+        employee.email = data.email
+    if data.id_number is not None:
+        employee.id_number = data.id_number
 
     db.add(employee)
     db.commit()
@@ -217,6 +246,9 @@ async def update_employee(
         role=employee.role.value,
         branch_id=employee.branch_id,
         branch_name=branch_name,
+        email=employee.email,
+        id_number=employee.id_number,
+        profile_picture_url=employee.profile_picture_url,
         is_active=employee.is_active,
         created_at=employee.created_at,
         last_login_at=employee.last_login_at,
@@ -233,3 +265,301 @@ async def list_branches(
         select(Branch).where(Branch.chain_id == current_user.chain_id)
     ).all()
     return [{"id": b.id, "name": b.name} for b in branches]
+
+
+# ============== Profile Picture Routes ==============
+
+@router.post("/{id}/profile-picture/upload-url", response_model=ProfilePictureUploadResponse)
+async def request_profile_picture_upload(
+    id: int,
+    data: ProfilePictureUploadRequest,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+    storage: StorageService = Depends(get_storage_service),
+):
+    """Request presigned URL for profile picture upload."""
+    if current_user.role not in ["hq", "manager"]:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+    employee = db.get(Employee, id)
+    if not employee or employee.chain_id != current_user.chain_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Employee not found")
+
+    upload_url, object_key = storage.generate_profile_picture_url(
+        employee_id=id,
+        content_type=data.content_type,
+    )
+
+    return ProfilePictureUploadResponse(upload_url=upload_url, object_key=object_key)
+
+
+@router.post("/{id}/profile-picture", response_model=EmployeeResponse)
+async def confirm_profile_picture(
+    id: int,
+    data: ProfilePictureConfirmRequest,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+    storage: StorageService = Depends(get_storage_service),
+):
+    """Confirm profile picture upload and update employee."""
+    if current_user.role not in ["hq", "manager"]:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+    employee = db.get(Employee, id)
+    if not employee or employee.chain_id != current_user.chain_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Employee not found")
+
+    # Update profile picture URL
+    employee.profile_picture_url = storage.get_object_url(data.object_key)
+    db.add(employee)
+    db.commit()
+    db.refresh(employee)
+
+    branch_name = None
+    if employee.branch_id:
+        branch = db.get(Branch, employee.branch_id)
+        branch_name = branch.name if branch else None
+
+    return EmployeeResponse(
+        id=employee.id,
+        name=employee.name,
+        phone=employee.phone,
+        role=employee.role.value,
+        branch_id=employee.branch_id,
+        branch_name=branch_name,
+        email=employee.email,
+        id_number=employee.id_number,
+        profile_picture_url=employee.profile_picture_url,
+        is_active=employee.is_active,
+        created_at=employee.created_at,
+        last_login_at=employee.last_login_at,
+    )
+
+
+# ============== Document Routes ==============
+
+@router.get("/{id}/documents", response_model=List[EmployeeDocumentResponse])
+async def list_employee_documents(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+    storage: StorageService = Depends(get_storage_service),
+):
+    """List all documents for an employee."""
+    employee = db.get(Employee, id)
+    if not employee or employee.chain_id != current_user.chain_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Employee not found")
+
+    documents = db.exec(
+        select(EmployeeDocument)
+        .where(EmployeeDocument.employee_id == id)
+        .order_by(EmployeeDocument.created_at.desc())
+    ).all()
+
+    result = []
+    for doc in documents:
+        # Get verified by name
+        verified_by_name = None
+        if doc.verified_by_id:
+            verifier = db.get(Employee, doc.verified_by_id)
+            verified_by_name = verifier.name if verifier else None
+
+        # Generate presigned view URL
+        view_url = doc.url
+        url_parts = doc.url.split(f"/{storage.bucket}/")
+        if len(url_parts) == 2:
+            object_key = url_parts[1]
+            view_url = storage.generate_presigned_download_url(object_key)
+
+        result.append(
+            EmployeeDocumentResponse(
+                id=doc.id,
+                employee_id=doc.employee_id,
+                document_type=doc.document_type.value,
+                document_type_label=DOCUMENT_TYPE_LABELS.get(doc.document_type.value, doc.document_type.value),
+                name=doc.name,
+                url=doc.url,
+                view_url=view_url,
+                file_size=doc.file_size,
+                content_type=doc.content_type,
+                expires_at=doc.expires_at,
+                is_verified=doc.is_verified,
+                verified_by_name=verified_by_name,
+                verified_at=doc.verified_at,
+                created_at=doc.created_at,
+            )
+        )
+
+    return result
+
+
+@router.post("/{id}/documents/upload-url", response_model=DocumentUploadResponse)
+async def request_document_upload(
+    id: int,
+    data: DocumentUploadRequest,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+    storage: StorageService = Depends(get_storage_service),
+):
+    """Request presigned URL for document upload."""
+    if current_user.role not in ["hq", "manager"]:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+    employee = db.get(Employee, id)
+    if not employee or employee.chain_id != current_user.chain_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Employee not found")
+
+    upload_url, object_key = storage.generate_employee_upload_url(
+        employee_id=id,
+        doc_type=data.document_type.value,
+        content_type=data.content_type,
+    )
+
+    return DocumentUploadResponse(
+        upload_url=upload_url,
+        object_key=object_key,
+        document_type=data.document_type,
+    )
+
+
+@router.post("/{id}/documents", response_model=EmployeeDocumentResponse)
+async def confirm_document_upload(
+    id: int,
+    data: DocumentConfirmRequest,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+    storage: StorageService = Depends(get_storage_service),
+):
+    """Confirm document upload and create record."""
+    if current_user.role not in ["hq", "manager"]:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+    employee = db.get(Employee, id)
+    if not employee or employee.chain_id != current_user.chain_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Employee not found")
+
+    url = storage.get_object_url(data.object_key)
+
+    # Determine content type from object key
+    content_type = None
+    if data.object_key.endswith(".pdf"):
+        content_type = "application/pdf"
+    elif data.object_key.endswith(".jpg") or data.object_key.endswith(".jpeg"):
+        content_type = "image/jpeg"
+    elif data.object_key.endswith(".png"):
+        content_type = "image/png"
+
+    document = EmployeeDocument(
+        employee_id=id,
+        document_type=DocumentType(data.document_type),
+        name=data.name,
+        url=url,
+        file_size=data.file_size,
+        content_type=content_type,
+        uploaded_by_id=current_user.id,
+        expires_at=data.expires_at,
+    )
+    db.add(document)
+    db.commit()
+    db.refresh(document)
+
+    # Generate presigned view URL
+    view_url = storage.generate_presigned_download_url(data.object_key)
+
+    return EmployeeDocumentResponse(
+        id=document.id,
+        employee_id=document.employee_id,
+        document_type=document.document_type.value,
+        document_type_label=DOCUMENT_TYPE_LABELS.get(document.document_type.value, document.document_type.value),
+        name=document.name,
+        url=document.url,
+        view_url=view_url,
+        file_size=document.file_size,
+        content_type=document.content_type,
+        expires_at=document.expires_at,
+        is_verified=document.is_verified,
+        verified_by_name=None,
+        verified_at=document.verified_at,
+        created_at=document.created_at,
+    )
+
+
+@router.post("/{employee_id}/documents/{doc_id}/verify", response_model=EmployeeDocumentResponse)
+async def verify_document(
+    employee_id: int,
+    doc_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+    storage: StorageService = Depends(get_storage_service),
+):
+    """Mark a document as verified. Only HQ/managers can verify."""
+    if current_user.role not in ["hq", "manager"]:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+    employee = db.get(Employee, employee_id)
+    if not employee or employee.chain_id != current_user.chain_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Employee not found")
+
+    document = db.get(EmployeeDocument, doc_id)
+    if not document or document.employee_id != employee_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    from datetime import datetime
+    document.is_verified = True
+    document.verified_by_id = current_user.id
+    document.verified_at = datetime.utcnow()
+    db.add(document)
+    db.commit()
+    db.refresh(document)
+
+    # Get verifier name
+    verifier = db.get(Employee, document.verified_by_id)
+    verified_by_name = verifier.name if verifier else None
+
+    # Generate presigned view URL
+    view_url = document.url
+    url_parts = document.url.split(f"/{storage.bucket}/")
+    if len(url_parts) == 2:
+        object_key = url_parts[1]
+        view_url = storage.generate_presigned_download_url(object_key)
+
+    return EmployeeDocumentResponse(
+        id=document.id,
+        employee_id=document.employee_id,
+        document_type=document.document_type.value,
+        document_type_label=DOCUMENT_TYPE_LABELS.get(document.document_type.value, document.document_type.value),
+        name=document.name,
+        url=document.url,
+        view_url=view_url,
+        file_size=document.file_size,
+        content_type=document.content_type,
+        expires_at=document.expires_at,
+        is_verified=document.is_verified,
+        verified_by_name=verified_by_name,
+        verified_at=document.verified_at,
+        created_at=document.created_at,
+    )
+
+
+@router.delete("/{employee_id}/documents/{doc_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(
+    employee_id: int,
+    doc_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    """Delete a document. Only HQ/managers can delete."""
+    if current_user.role not in ["hq", "manager"]:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Permission denied")
+
+    employee = db.get(Employee, employee_id)
+    if not employee or employee.chain_id != current_user.chain_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Employee not found")
+
+    document = db.get(EmployeeDocument, doc_id)
+    if not document or document.employee_id != employee_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    db.delete(document)
+    db.commit()
+    return None

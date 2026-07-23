@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
-from typing import Optional
-from app.models.employee import EmployeeRole
+from typing import Optional, List
+from app.models.employee import EmployeeRole, DocumentType
 
 
 class EmployeeCreate(BaseModel):
@@ -12,6 +12,8 @@ class EmployeeCreate(BaseModel):
     pin: str = Field(min_length=4, max_length=6, pattern=r"^[0-9]{4,6}$")
     role: EmployeeRole
     branch_id: Optional[int] = None  # None for HQ role
+    email: Optional[str] = Field(None, max_length=255)
+    id_number: Optional[str] = Field(None, max_length=50)
 
 
 class EmployeeUpdate(BaseModel):
@@ -21,6 +23,8 @@ class EmployeeUpdate(BaseModel):
     role: Optional[EmployeeRole] = None
     branch_id: Optional[int] = None
     is_active: Optional[bool] = None
+    email: Optional[str] = Field(None, max_length=255)
+    id_number: Optional[str] = Field(None, max_length=50)
 
 
 class EmployeeResponse(BaseModel):
@@ -32,6 +36,9 @@ class EmployeeResponse(BaseModel):
     role: str
     branch_id: Optional[int]
     branch_name: Optional[str] = None
+    email: Optional[str] = None
+    id_number: Optional[str] = None
+    profile_picture_url: Optional[str] = None
     is_active: bool
     created_at: datetime
     last_login_at: Optional[datetime]
@@ -47,5 +54,74 @@ class EmployeeListItem(BaseModel):
     role_label: str
     branch_id: Optional[int]
     branch_name: Optional[str]
+    email: Optional[str] = None
+    profile_picture_url: Optional[str] = None
     is_active: bool
     created_at: datetime
+
+
+# Document schemas
+
+class DocumentUploadRequest(BaseModel):
+    """Request presigned URL for document upload."""
+
+    document_type: DocumentType
+    name: str = Field(min_length=1, max_length=255)
+    content_type: str = Field(pattern=r"^(image|application)/.+$")
+    expires_at: Optional[datetime] = None
+
+
+class DocumentUploadResponse(BaseModel):
+    """Response with presigned upload URL."""
+
+    upload_url: str
+    object_key: str
+    document_type: DocumentType
+
+
+class DocumentConfirmRequest(BaseModel):
+    """Confirm document upload completed."""
+
+    object_key: str
+    document_type: DocumentType
+    name: str
+    file_size: Optional[int] = None
+    expires_at: Optional[datetime] = None
+
+
+class EmployeeDocumentResponse(BaseModel):
+    """Employee document response."""
+
+    id: int
+    employee_id: int
+    document_type: str
+    document_type_label: str
+    name: str
+    url: str
+    view_url: str  # Presigned URL for viewing
+    file_size: Optional[int]
+    content_type: Optional[str]
+    expires_at: Optional[datetime]
+    is_verified: bool
+    verified_by_name: Optional[str] = None
+    verified_at: Optional[datetime]
+    created_at: datetime
+
+
+class ProfilePictureUploadRequest(BaseModel):
+    """Request presigned URL for profile picture upload."""
+
+    content_type: str = Field(pattern=r"^image/.+$")
+
+
+class ProfilePictureUploadResponse(BaseModel):
+    """Response with presigned upload URL for profile picture."""
+
+    upload_url: str
+    object_key: str
+
+
+class ProfilePictureConfirmRequest(BaseModel):
+    """Confirm profile picture upload completed."""
+
+    object_key: str

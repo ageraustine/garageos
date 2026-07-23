@@ -9,6 +9,7 @@ from app.models.line_item import LineItem, LineItemKind
 from app.models.media_asset import MediaAsset, MediaType
 from app.models.payment import Payment, PaymentType, PaymentStatus
 from app.models.service import Service, ServiceStage, JobService, ServiceQuotationItem
+from app.models.expense import Expense, ExpenseCategory
 from app.models.hr import (
     EmployeeSalary,
     SalaryChangeReason,
@@ -48,6 +49,9 @@ __all__ = [
     "ServiceStage",
     "JobService",
     "ServiceQuotationItem",
+    # Expenses
+    "Expense",
+    "ExpenseCategory",
     # HR models
     "EmployeeSalary",
     "SalaryChangeReason",

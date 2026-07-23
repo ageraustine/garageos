@@ -16,8 +16,13 @@ from app.schemas.auth import (
     ChangePinRequest,
     ChainSettingsUpdate,
     ChainSettingsResponse,
+    LogoUploadRequest,
+    LogoUploadResponse,
+    LogoConfirmRequest,
 )
 from app.services.auth_service import AuthService
+from app.api.deps import get_storage_service
+from app.services.storage_service import StorageService
 from app.core.security import decode_token
 from app.core.exceptions import ConflictError, UnauthorizedError, NotFoundError
 
@@ -181,3 +186,58 @@ async def update_chain_settings(
         return service.update_chain_settings(current_user.chain_id, data)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+
+
+@router.post("/chain/logo/upload-url", response_model=LogoUploadResponse)
+async def get_logo_upload_url(
+    data: LogoUploadRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    storage: StorageService = Depends(get_storage_service),
+):
+    """
+    Get presigned URL for chain logo upload (HQ only).
+    """
+    if current_user.role != "hq":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only HQ can upload chain logo",
+        )
+
+    upload_url, object_key = storage.generate_chain_logo_url(
+        current_user.chain_id, data.content_type
+    )
+
+    return LogoUploadResponse(upload_url=upload_url, object_key=object_key)
+
+
+@router.post("/chain/logo", response_model=ChainSettingsResponse)
+async def confirm_logo_upload(
+    data: LogoConfirmRequest,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+    storage: StorageService = Depends(get_storage_service),
+):
+    """
+    Confirm logo upload and update chain branding (HQ only).
+    """
+    if current_user.role != "hq":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only HQ can upload chain logo",
+        )
+
+    # Get the permanent URL for the uploaded file
+    logo_url = storage.get_object_url(data.object_key)
+
+    # Update chain branding with logo URL
+    service = AuthService(db)
+    chain_settings = service.get_chain_settings(current_user.chain_id)
+
+    # Merge with existing branding or create new
+    branding = chain_settings.branding or {}
+    branding["logo_url"] = logo_url
+
+    return service.update_chain_settings(
+        current_user.chain_id,
+        ChainSettingsUpdate(branding=branding),
+    )

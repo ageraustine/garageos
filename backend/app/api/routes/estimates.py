@@ -1,21 +1,74 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlmodel import Session
+from decimal import Decimal
 from app.database import get_db
 from app.api.deps import get_current_user
+from app.models.employee import Employee
 from app.schemas.estimate import (
     EstimateCreate,
     EstimateApprove,
     EstimateResponse,
     LineItemResponse,
+    InternalApprovalRequest,
+    PaymentUpdateRequest,
+    ApproverInfo,
 )
 from app.services.estimate_service import (
     EstimateService,
     EstimateAlreadyApproved,
     MissingJustification,
+    InvalidPaymentAmount,
 )
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import NotFoundError, AppException
 
 router = APIRouter(prefix="/jobs/{job_id}/estimates", tags=["estimates"])
+
+
+def build_estimate_response(
+    estimate, line_items, db: Session = None
+) -> EstimateResponse:
+    """Build EstimateResponse with all fields including approver info."""
+    approver = None
+    if estimate.approved_by_id and db:
+        emp = db.get(Employee, estimate.approved_by_id)
+        if emp:
+            approver = ApproverInfo(
+                id=emp.id,
+                name=emp.name,
+                role=emp.role.value,
+            )
+
+    # Calculate balance
+    balance = Decimal("0")
+    if estimate.total_approved is not None:
+        balance = estimate.total_approved - estimate.paid_amount
+
+    return EstimateResponse(
+        id=estimate.id,
+        job_id=estimate.job_id,
+        version=estimate.version,
+        approved_at=estimate.approved_at,
+        approved_ip=estimate.approved_ip,
+        approved_by_id=estimate.approved_by_id,
+        approval_type=estimate.approval_type.value if estimate.approval_type else None,
+        approver=approver,
+        total_approved=estimate.total_approved,
+        paid_amount=estimate.paid_amount,
+        balance=balance,
+        is_pending_approval=estimate.approved_at is None,
+        created_at=estimate.created_at,
+        line_items=[
+            LineItemResponse(
+                id=item.id,
+                kind=item.kind.value,
+                label=item.label,
+                price=item.price,
+                is_labor=item.is_labor,
+                justification_media_id=item.justification_media_id,
+            )
+            for item in line_items
+        ],
+    )
 
 
 @router.post("/", response_model=EstimateResponse, status_code=status.HTTP_201_CREATED)
@@ -30,25 +83,7 @@ async def create_estimate(
     try:
         estimate = service.create(job_id, data)
         line_items = service.get_line_items(estimate.id)
-        return EstimateResponse(
-            id=estimate.id,
-            job_id=estimate.job_id,
-            version=estimate.version,
-            approved_at=estimate.approved_at,
-            approved_ip=estimate.approved_ip,
-            total_approved=estimate.total_approved,
-            created_at=estimate.created_at,
-            line_items=[
-                LineItemResponse(
-                    id=item.id,
-                    kind=item.kind.value,
-                    label=item.label,
-                    price=item.price,
-                    justification_media_id=item.justification_media_id,
-                )
-                for item in line_items
-            ],
-        )
+        return build_estimate_response(estimate, line_items, db)
     except MissingJustification as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=e.message)
 
@@ -65,25 +100,7 @@ async def get_latest_estimate(
     if not estimate:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="No estimates found")
     line_items = service.get_line_items(estimate.id)
-    return EstimateResponse(
-        id=estimate.id,
-        job_id=estimate.job_id,
-        version=estimate.version,
-        approved_at=estimate.approved_at,
-        approved_ip=estimate.approved_ip,
-        total_approved=estimate.total_approved,
-        created_at=estimate.created_at,
-        line_items=[
-            LineItemResponse(
-                id=item.id,
-                kind=item.kind.value,
-                label=item.label,
-                price=item.price,
-                justification_media_id=item.justification_media_id,
-            )
-            for item in line_items
-        ],
-    )
+    return build_estimate_response(estimate, line_items, db)
 
 
 @router.post("/{estimate_id}/approve", response_model=EstimateResponse)
@@ -103,26 +120,80 @@ async def approve_estimate(
     try:
         estimate = service.approve(estimate_id, data, client_ip)
         line_items = service.get_line_items(estimate.id)
-        return EstimateResponse(
-            id=estimate.id,
-            job_id=estimate.job_id,
-            version=estimate.version,
-            approved_at=estimate.approved_at,
-            approved_ip=estimate.approved_ip,
-            total_approved=estimate.total_approved,
-            created_at=estimate.created_at,
-            line_items=[
-                LineItemResponse(
-                    id=item.id,
-                    kind=item.kind.value,
-                    label=item.label,
-                    price=item.price,
-                    justification_media_id=item.justification_media_id,
-                )
-                for item in line_items
-            ],
-        )
+        return build_estimate_response(estimate, line_items, db)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
     except EstimateAlreadyApproved as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+
+@router.post("/internal-approve", response_model=EstimateResponse)
+async def internal_approve_estimate(
+    job_id: int,
+    data: InternalApprovalRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Internal approval by HQ or branch manager.
+    Requires hq or manager role.
+    """
+    # Check permission - only HQ and managers can approve internally
+    if current_user.role not in ["hq", "manager"]:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Only HQ and managers can approve estimates internally",
+        )
+
+    service = EstimateService(db)
+    estimate = service.get_latest_for_job(job_id)
+    if not estimate:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="No estimates found")
+
+    client_ip = request.client.host if request.client else "unknown"
+    try:
+        estimate = service.internal_approve(
+            estimate.id, data, current_user.id, client_ip
+        )
+        line_items = service.get_line_items(estimate.id)
+        return build_estimate_response(estimate, line_items, db)
+    except NotFoundError as e:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except EstimateAlreadyApproved as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+
+@router.patch("/payment", response_model=EstimateResponse)
+async def update_payment(
+    job_id: int,
+    data: PaymentUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Update paid amount on an estimate.
+    Requires hq or manager role.
+    """
+    # Check permission - only HQ and managers can update payment
+    if current_user.role not in ["hq", "manager"]:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Only HQ and managers can update payment amounts",
+        )
+
+    service = EstimateService(db)
+    estimate = service.get_latest_for_job(job_id)
+    if not estimate:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="No estimates found")
+
+    try:
+        estimate = service.update_payment(estimate.id, data)
+        line_items = service.get_line_items(estimate.id)
+        return build_estimate_response(estimate, line_items, db)
+    except NotFoundError as e:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except InvalidPaymentAmount as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=e.message)
+    except AppException as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=e.message)

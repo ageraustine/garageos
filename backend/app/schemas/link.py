@@ -22,6 +22,7 @@ class LinkLineItem(BaseModel):
     kind: str  # critical | optional
     label: str
     price: Decimal
+    is_labor: bool = False  # True for labor/service charges, False for parts
     media_url: Optional[str] = None  # Justification photo/voice
 
 

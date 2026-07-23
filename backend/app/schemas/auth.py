@@ -123,3 +123,22 @@ class ChainSettingsResponse(BaseModel):
     display_name: str
     currency: str
     branding: dict | None = None
+
+
+class LogoUploadRequest(BaseModel):
+    """Request to get presigned URL for logo upload."""
+
+    content_type: str = "image/png"
+
+
+class LogoUploadResponse(BaseModel):
+    """Response with presigned upload URL."""
+
+    upload_url: str
+    object_key: str
+
+
+class LogoConfirmRequest(BaseModel):
+    """Request to confirm logo upload."""
+
+    object_key: str

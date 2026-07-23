@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui";
 import { api, EmployeeListItem, BranchListItem } from "@/lib/api";
@@ -167,7 +168,20 @@ export default function EmployeesPage() {
               {employees.map((emp) => (
                 <tr key={emp.id} className={!emp.is_active ? "opacity-50" : ""}>
                   <td className="px-6 py-4">
-                    <span className="font-medium text-navy-900">{emp.name}</span>
+                    <div className="flex items-center gap-3">
+                      {emp.profile_picture_url ? (
+                        <img
+                          src={emp.profile_picture_url}
+                          alt={emp.name}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gold-100 flex items-center justify-center text-gold-700 font-medium text-sm">
+                          {emp.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="font-medium text-navy-900">{emp.name}</span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-navy-600 font-mono text-sm">{emp.phone}</td>
                   <td className="px-6 py-4">
@@ -191,7 +205,13 @@ export default function EmployeesPage() {
                       {emp.is_active ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right space-x-3">
+                    <Link
+                      href={`/dashboard/hr/employees/${emp.id}`}
+                      className="text-sm text-gold-600 hover:text-gold-700"
+                    >
+                      Edit
+                    </Link>
                     <button
                       onClick={() => toggleActive(emp)}
                       className={`text-sm ${

@@ -75,6 +75,86 @@ class StorageService:
         protocol = "https" if settings.MINIO_SECURE else "http"
         return f"{protocol}://{settings.MINIO_ENDPOINT}/{self.bucket}/{object_key}"
 
+    def generate_employee_upload_url(
+        self, employee_id: int, doc_type: str, content_type: str = "application/octet-stream"
+    ) -> tuple[str, str]:
+        """
+        Generate presigned URL for employee document upload.
+        Returns (presigned_url, object_key).
+        """
+        ext = self._get_extension(content_type)
+        object_key = f"employees/{employee_id}/{doc_type}/{uuid.uuid4()}{ext}"
+
+        try:
+            url = self.client.presigned_put_object(
+                self.bucket,
+                object_key,
+                expires=timedelta(seconds=settings.MINIO_PRESIGNED_EXPIRY_SECONDS),
+            )
+            return url, object_key
+        except S3Error as e:
+            raise StorageError(f"Failed to generate upload URL: {e}")
+
+    def generate_profile_picture_url(
+        self, employee_id: int, content_type: str = "image/jpeg"
+    ) -> tuple[str, str]:
+        """
+        Generate presigned URL for profile picture upload.
+        Returns (presigned_url, object_key).
+        """
+        ext = self._get_extension(content_type)
+        object_key = f"employees/{employee_id}/profile/{uuid.uuid4()}{ext}"
+
+        try:
+            url = self.client.presigned_put_object(
+                self.bucket,
+                object_key,
+                expires=timedelta(seconds=settings.MINIO_PRESIGNED_EXPIRY_SECONDS),
+            )
+            return url, object_key
+        except S3Error as e:
+            raise StorageError(f"Failed to generate upload URL: {e}")
+
+    def generate_chain_logo_url(
+        self, chain_id: int, content_type: str = "image/png"
+    ) -> tuple[str, str]:
+        """
+        Generate presigned URL for chain logo upload.
+        Returns (presigned_url, object_key).
+        """
+        ext = self._get_extension(content_type)
+        object_key = f"chains/{chain_id}/logo/{uuid.uuid4()}{ext}"
+
+        try:
+            url = self.client.presigned_put_object(
+                self.bucket,
+                object_key,
+                expires=timedelta(seconds=settings.MINIO_PRESIGNED_EXPIRY_SECONDS),
+            )
+            return url, object_key
+        except S3Error as e:
+            raise StorageError(f"Failed to generate upload URL: {e}")
+
+    def generate_expense_receipt_url(
+        self, chain_id: int, expense_id: int, content_type: str = "image/jpeg"
+    ) -> tuple[str, str]:
+        """
+        Generate presigned URL for expense receipt upload.
+        Returns (presigned_url, object_key).
+        """
+        ext = self._get_extension(content_type)
+        object_key = f"chains/{chain_id}/expenses/{expense_id}/receipt/{uuid.uuid4()}{ext}"
+
+        try:
+            url = self.client.presigned_put_object(
+                self.bucket,
+                object_key,
+                expires=timedelta(seconds=settings.MINIO_PRESIGNED_EXPIRY_SECONDS),
+            )
+            return url, object_key
+        except S3Error as e:
+            raise StorageError(f"Failed to generate upload URL: {e}")
+
     def _get_extension(self, content_type: str) -> str:
         """Map content type to file extension."""
         mapping = {
@@ -85,5 +165,6 @@ class StorageService:
             "audio/wav": ".wav",
             "audio/ogg": ".ogg",
             "audio/webm": ".webm",
+            "application/pdf": ".pdf",
         }
         return mapping.get(content_type, "")

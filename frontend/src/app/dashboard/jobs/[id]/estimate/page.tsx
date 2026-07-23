@@ -21,6 +21,13 @@ export default function EstimateViewPage({
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [approving, setApproving] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paidAmount, setPaidAmount] = useState("");
+  const [updatingPayment, setUpdatingPayment] = useState(false);
+
+  // Check if user can approve internally or edit payment
+  const canApproveOrEdit = user && ["hq", "manager"].includes(user.role);
 
   useEffect(() => {
     loadEstimate();
@@ -30,10 +37,47 @@ export default function EstimateViewPage({
     try {
       const data = await api.estimates.getLatest(jobId);
       setEstimate(data);
+      if (data.paid_amount) {
+        setPaidAmount(data.paid_amount);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load estimate");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleInternalApprove = async () => {
+    if (!estimate) return;
+    setApproving(true);
+    try {
+      // Approve all items (critical + optional)
+      const optionalIds = estimate.line_items
+        .filter(item => item.kind === "optional")
+        .map(item => item.id);
+      const updated = await api.estimates.internalApprove(jobId, {
+        selected_optional_ids: optionalIds,
+      });
+      setEstimate(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to approve");
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const handleUpdatePayment = async () => {
+    if (!estimate) return;
+    setUpdatingPayment(true);
+    try {
+      const amount = parseFloat(paidAmount) || 0;
+      const updated = await api.estimates.updatePayment(jobId, amount);
+      setEstimate(updated);
+      setShowPaymentModal(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update payment");
+    } finally {
+      setUpdatingPayment(false);
     }
   };
 
@@ -218,12 +262,26 @@ export default function EstimateViewPage({
               </div>
 
               {estimate.approved_at && estimate.total_approved && (
-                <div className="border-t border-navy-100 pt-3 flex justify-between">
-                  <dt className="font-medium text-green-700">Approved Amount</dt>
-                  <dd className="font-bold text-green-700">
-                    {currency} {parseFloat(estimate.total_approved).toLocaleString()}
-                  </dd>
-                </div>
+                <>
+                  <div className="border-t border-navy-100 pt-3 flex justify-between">
+                    <dt className="font-medium text-green-700">Approved Amount</dt>
+                    <dd className="font-bold text-green-700">
+                      {currency} {parseFloat(estimate.total_approved).toLocaleString()}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-navy-500">Paid</dt>
+                    <dd className="font-medium text-navy-900">
+                      {currency} {parseFloat(estimate.paid_amount || "0").toLocaleString()}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="font-medium text-orange-600">Balance</dt>
+                    <dd className="font-bold text-orange-600">
+                      {currency} {parseFloat(estimate.balance || "0").toLocaleString()}
+                    </dd>
+                  </div>
+                </>
               )}
             </dl>
 
@@ -234,16 +292,49 @@ export default function EstimateViewPage({
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="font-medium">Customer Approved</span>
+                  <span className="font-medium">
+                    {estimate.approval_type === "internal"
+                      ? `Approved by ${estimate.approver?.name || "Staff"}`
+                      : "Customer Approved"}
+                  </span>
                 </div>
                 <p className="text-sm text-green-700">
                   Approved on {formatDate(estimate.approved_at)}
+                  {estimate.approval_type === "internal" && estimate.approver && (
+                    <span className="ml-1 capitalize">({estimate.approver.role})</span>
+                  )}
                 </p>
               </div>
             )}
 
             {/* Actions */}
             <div className="mt-6 space-y-3">
+              {/* Internal Approval for HQ/Manager */}
+              {!estimate.approved_at && canApproveOrEdit && (
+                <Button
+                  variant="primary"
+                  className="w-full"
+                  onClick={handleInternalApprove}
+                  disabled={approving}
+                >
+                  {approving ? "Approving..." : "Approve Quotation"}
+                </Button>
+              )}
+
+              {/* Edit Payment for HQ/Manager */}
+              {estimate.approved_at && canApproveOrEdit && (
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => {
+                    setPaidAmount(estimate.paid_amount || "0");
+                    setShowPaymentModal(true);
+                  }}
+                >
+                  Edit Payment
+                </Button>
+              )}
+
               {!estimate.approved_at && (
                 <Link href={`/dashboard/jobs/${jobId}/estimate/new`}>
                   <Button variant="secondary" className="w-full">
@@ -283,6 +374,77 @@ export default function EstimateViewPage({
           </div>
         </div>
       </div>
+
+      {/* Payment Edit Modal */}
+      {showPaymentModal && estimate && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b border-navy-100">
+              <h3 className="text-lg font-semibold text-navy-900">Edit Payment</h3>
+              <p className="text-sm text-navy-600 mt-1">
+                Update the paid amount for this quotation
+              </p>
+            </div>
+            <div className="p-6">
+              <div className="mb-4 p-4 bg-navy-50 rounded-lg">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-navy-500">Total Approved</span>
+                  <span className="font-medium text-navy-900">
+                    {currency} {parseFloat(estimate.total_approved || "0").toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-navy-500">Current Balance</span>
+                  <span className="font-medium text-orange-600">
+                    {currency} {parseFloat(estimate.balance || "0").toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <label className="block">
+                <span className="text-sm font-medium text-navy-700">Paid Amount ({currency})</span>
+                <input
+                  type="number"
+                  value={paidAmount}
+                  onChange={(e) => setPaidAmount(e.target.value)}
+                  min="0"
+                  max={estimate.total_approved || undefined}
+                  step="0.01"
+                  className="mt-1 w-full px-4 py-3 border border-navy-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+              </label>
+              {paidAmount && parseFloat(paidAmount) > 0 && estimate.total_approved && (
+                <div className="mt-3 p-3 bg-green-50 rounded-lg">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-green-700">New Balance</span>
+                    <span className="font-bold text-green-800">
+                      {currency} {(parseFloat(estimate.total_approved) - parseFloat(paidAmount)).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="p-6 border-t border-navy-100 flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowPaymentModal(false)}
+                className="flex-1"
+                disabled={updatingPayment}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleUpdatePayment}
+                disabled={updatingPayment}
+                className="flex-1"
+              >
+                {updatingPayment ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

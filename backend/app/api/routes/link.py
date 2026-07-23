@@ -108,6 +108,7 @@ async def get_job_by_token(
                     kind=item.kind.value,
                     label=item.label,
                     price=item.price,
+                    is_labor=item.is_labor,
                     media_url=media_url,
                 )
             )

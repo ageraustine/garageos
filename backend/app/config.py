@@ -31,6 +31,15 @@ class Settings(BaseSettings):
     MPESA_CALLBACK_URL: str = ""  # Public URL for callbacks
     MPESA_ENVIRONMENT: str = "sandbox"  # "sandbox" or "production"
 
+    # Africa's Talking SMS
+    AT_USERNAME: str = ""  # Africa's Talking username
+    AT_API_KEY: str = ""  # Africa's Talking API key
+    AT_SENDER_ID: str = ""  # Optional: Alphanumeric sender ID (e.g., "GarageOS")
+    AT_ENVIRONMENT: str = "sandbox"  # "sandbox" or "production"
+
+    # Frontend URL (for magic links in SMS)
+    FRONTEND_URL: str = "http://localhost:3000"
+
     class Config:
         env_file = ".env"
         extra = "ignore"

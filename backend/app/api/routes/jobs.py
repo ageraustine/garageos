@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlmodel import Session, select
 from typing import List, Optional
 from app.database import get_db
@@ -7,10 +7,15 @@ from app.schemas.job import JobCreate, JobStatusUpdate, JobResponse, JobCreateRe
 from app.schemas.auth import UserResponse
 from app.services.job_service import JobService, InvalidStatusTransition
 from app.services.service_service import ServiceService
+from app.services.job_notification_service import JobNotificationService
 from app.models.job import Job, JobStatus
 from app.models.vehicle import Vehicle
+from app.models.chain import Chain
 from app.models.service import JobService as JobServiceModel, Service, ServiceStage
 from app.core.exceptions import NotFoundError, AppException
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -201,13 +206,31 @@ async def get_job(
 async def update_job_status(
     id: int,
     data: JobStatusUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    _: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
-    """Update job status with validation."""
+    """Update job status with validation and send SMS notification if applicable."""
     service = JobService(db)
     try:
         job = service.update_status(id, data)
+
+        # Send notification in background (don't block the response)
+        def send_notification():
+            try:
+                chain = db.get(Chain, current_user.chain_id)
+                if chain:
+                    notification_service = JobNotificationService(db)
+                    notification_service.notify_on_status_change(
+                        job=job,
+                        new_status=data.status,
+                        chain=chain,
+                    )
+            except Exception as e:
+                logger.error(f"Failed to send notification for job {id}: {e}")
+
+        background_tasks.add_task(send_notification)
+
         return JobResponse(
             id=job.id,
             vehicle_id=job.vehicle_id,

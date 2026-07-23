@@ -29,6 +29,10 @@ class LineItem(SQLModel, table=True):
     )
     label: str = Field(max_length=200)
     price: Decimal = Field(max_digits=10, decimal_places=2)
+    is_labor: bool = Field(
+        default=False,
+        description="True for labor/service charges, False for parts/materials"
+    )
     justification_media_id: Optional[int] = Field(
         default=None,
         foreign_key="media_assets.id",

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api.routes import auth, customers, vehicles, jobs, estimates, media, payments, link, services, employees, mpesa_callback, quotation, branches, trust_score
+from app.api.routes import auth, customers, vehicles, jobs, estimates, media, payments, link, services, employees, mpesa_callback, quotation, branches, trust_score, analytics, expenses
 from app.api.routes.hr import router as hr_router
 
 app = FastAPI(
@@ -37,6 +37,8 @@ app.include_router(mpesa_callback.router, prefix=settings.API_PREFIX)
 app.include_router(quotation.router, prefix=settings.API_PREFIX)
 app.include_router(branches.router, prefix=settings.API_PREFIX)
 app.include_router(trust_score.router, prefix=settings.API_PREFIX)
+app.include_router(analytics.router, prefix=settings.API_PREFIX)
+app.include_router(expenses.router, prefix=settings.API_PREFIX)
 app.include_router(hr_router, prefix=settings.API_PREFIX)
 
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button, PDFPreviewModal } from "@/components/ui";
-import { api, JobDetail, EmployeeListItem, AssignedEmployee } from "@/lib/api";
+import { api, JobDetail, EmployeeListItem, AssignedEmployee, Estimate } from "@/lib/api";
 import { fadeInUp } from "@/lib/animations";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -56,8 +56,13 @@ export default function JobDetailPage({
   // PDF Preview state
   const [showPdfPreview, setShowPdfPreview] = useState(false);
 
+  // Estimate state
+  const [estimate, setEstimate] = useState<Estimate | null>(null);
+  const [approvingEstimate, setApprovingEstimate] = useState(false);
+
   const canEditAssignments = user && ["hq", "manager", "advisor"].includes(user.role);
   const canDelete = user && ["hq", "manager"].includes(user.role);
+  const canApproveInternally = user && ["hq", "manager"].includes(user.role);
 
   // Check if user can update stages (assigned to job or has elevated role)
   const canUpdateStages = user && (
@@ -73,10 +78,40 @@ export default function JobDetailPage({
     try {
       const data = await api.jobs.get(parseInt(id));
       setJob(data);
+      // Load estimate if job has one
+      if (data.has_estimate) {
+        try {
+          const est = await api.estimates.getLatest(data.id);
+          setEstimate(est);
+        } catch {
+          // Estimate not found, ignore
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load job");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleInternalApprove = async () => {
+    if (!job || !estimate) return;
+    setApprovingEstimate(true);
+    try {
+      // Approve all items (critical + optional)
+      const optionalIds = estimate.line_items
+        .filter(item => item.kind === "optional")
+        .map(item => item.id);
+      const updated = await api.estimates.internalApprove(job.id, {
+        selected_optional_ids: optionalIds,
+      });
+      setEstimate(updated);
+      // Reload job to update estimate_approved flag
+      await loadJob();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to approve estimate");
+    } finally {
+      setApprovingEstimate(false);
     }
   };
 
@@ -342,9 +377,56 @@ export default function JobDetailPage({
                 </span>
               )}
             </div>
-            <div className="flex gap-3">
+
+            {/* Estimate Summary */}
+            {estimate && estimate.approved_at && (
+              <div className="mb-4 p-4 bg-navy-50 rounded-lg">
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-navy-500 block">Total</span>
+                    <span className="font-semibold text-navy-900">
+                      {user?.chain_currency || "KES"} {parseFloat(estimate.total_approved || "0").toLocaleString()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-navy-500 block">Paid</span>
+                    <span className="font-semibold text-green-700">
+                      {user?.chain_currency || "KES"} {parseFloat(estimate.paid_amount || "0").toLocaleString()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-navy-500 block">Balance</span>
+                    <span className="font-semibold text-orange-600">
+                      {user?.chain_currency || "KES"} {parseFloat(estimate.balance || "0").toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                {estimate.approver && (
+                  <p className="text-xs text-navy-500 mt-3">
+                    Approved by {estimate.approver.name} ({estimate.approver.role})
+                  </p>
+                )}
+                {!estimate.approver && estimate.approval_type === "customer" && (
+                  <p className="text-xs text-navy-500 mt-3">
+                    Approved by customer
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3">
+              {/* Internal Approve Button for HQ/Manager */}
+              {job.has_estimate && !job.estimate_approved && canApproveInternally && (
+                <Button
+                  variant="primary"
+                  onClick={handleInternalApprove}
+                  disabled={approvingEstimate}
+                >
+                  {approvingEstimate ? "Approving..." : "Approve"}
+                </Button>
+              )}
               <Link href={`/dashboard/jobs/${job.id}/estimate/new`}>
-                <Button variant="primary">
+                <Button variant={job.has_estimate && !job.estimate_approved && canApproveInternally ? "secondary" : "primary"}>
                   {job.has_estimate ? "Edit Quotation" : "Create Quotation"}
                 </Button>
               </Link>
