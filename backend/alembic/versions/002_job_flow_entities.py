@@ -9,15 +9,20 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, ENUM
 
 revision: str = "002"
 down_revision: Union[str, None] = "001"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+# Create enum type for line item kind
+lineitemkind_enum = ENUM('critical', 'optional', name='lineitemkind', create_type=False)
+
 
 def upgrade() -> None:
+    # Create the lineitemkind enum type
+    lineitemkind_enum.create(op.get_bind(), checkfirst=True)
     # customers table
     op.create_table(
         "customers",
@@ -108,7 +113,7 @@ def upgrade() -> None:
         "line_items",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("estimate_id", sa.Integer(), nullable=False),
-        sa.Column("kind", sa.String(20), nullable=False, server_default="critical"),
+        sa.Column("kind", lineitemkind_enum, nullable=False, server_default="critical"),
         sa.Column("label", sa.String(200), nullable=False),
         sa.Column("price", sa.Numeric(10, 2), nullable=False),
         sa.Column("justification_media_id", sa.Integer(), nullable=True),
@@ -149,3 +154,5 @@ def downgrade() -> None:
     op.drop_table("jobs")
     op.drop_table("vehicles")
     op.drop_table("customers")
+    # Drop the lineitemkind enum type
+    lineitemkind_enum.drop(op.get_bind(), checkfirst=True)
