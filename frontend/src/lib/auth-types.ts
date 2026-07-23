@@ -6,12 +6,12 @@ export interface User {
   name: string;
   phone: string;
   role: "advisor" | "mechanic" | "manager" | "hq";
-  chain_id: number;
-  chain_name: string;
-  chain_display_name: string;
+  chain_id: number | null;
+  chain_name: string | null;
+  chain_display_name: string | null;
   chain_currency: string;
   branch_id: number | null;
-  is_external_seller?: boolean;
+  is_external_seller: boolean;
 }
 
 export interface AuthState {

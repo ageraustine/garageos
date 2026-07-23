@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -8,7 +8,7 @@ import { Container, Button } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { fadeInUp } from "@/lib/animations";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading } = useAuth();
@@ -153,5 +153,19 @@ export default function LoginPage() {
         </motion.div>
       </Container>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-navy-50">
+          <div className="animate-spin w-8 h-8 border-4 border-gold-500 border-t-transparent rounded-full" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

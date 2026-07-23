@@ -5,7 +5,18 @@ import { motion } from "framer-motion";
 import { Container } from "@/components/ui";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 
-const killerFeatures = [
+type FeatureColor = "gold" | "emerald" | "sky" | "violet";
+
+const killerFeatures: Array<{
+  id: string;
+  label: string;
+  headline: string;
+  subheadline: string;
+  description: string;
+  visual: string;
+  color: FeatureColor;
+  stats: Array<{ value: string; label: string }>;
+}> = [
   {
     id: "magic-link",
     label: "Magic Link",
