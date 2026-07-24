@@ -95,10 +95,20 @@ function FeatureVisual({ feature }: { feature: (typeof killerFeatures)[0] }) {
   };
 
   if (feature.visual === "magic-link") {
+    const stages = [
+      { name: "Intake", completed: true },
+      { name: "Diagnosis", completed: true },
+      { name: "Working", completed: true },
+      { name: "Washing", completed: false },
+      { name: "Ready", completed: false },
+    ];
+    const completedCount = stages.filter(s => s.completed).length;
+    const progress = Math.round((completedCount / stages.length) * 100);
+
     return (
       <div className={`relative bg-gradient-to-br ${colorClasses[feature.color]} rounded-3xl p-8 border`}>
         {/* Phone mockup */}
-        <div className="relative mx-auto w-64 bg-navy-900 rounded-[2.5rem] p-3 shadow-2xl">
+        <div className="relative mx-auto w-72 bg-navy-900 rounded-[2.5rem] p-3 shadow-2xl">
           <div className="bg-white rounded-[2rem] overflow-hidden">
             {/* Status bar */}
             <div className="h-6 bg-stone-100 flex items-center justify-center">
@@ -106,24 +116,65 @@ function FeatureVisual({ feature }: { feature: (typeof killerFeatures)[0] }) {
             </div>
             {/* Content */}
             <div className="p-4 space-y-4">
-              <div className="text-center">
-                <div className={`w-12 h-12 ${accentClasses[feature.color]} rounded-xl mx-auto mb-2 flex items-center justify-center`}>
-                  <span className="text-lg font-bold">G</span>
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-navy-900 text-sm font-bold">Toyota Corolla</p>
+                  <p className="text-navy-500 text-xs">KDA 123A</p>
                 </div>
-                <p className="text-navy-900 text-sm font-medium">Your car is ready!</p>
-                <p className="text-navy-500 text-xs">KDA 123A • Toyota Corolla</p>
+                <span className="px-2 py-1 rounded-full text-[10px] font-medium bg-orange-100 text-orange-700">
+                  Working
+                </span>
               </div>
-              <div className="bg-stone-100 rounded-xl p-3">
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-navy-500">Progress</span>
-                  <span className="text-emerald-600">Complete</span>
+
+              {/* Work Progress */}
+              <div className="bg-stone-50 rounded-xl p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-semibold text-navy-800">Brake Service</h3>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-gold-100 text-gold-700">
+                    {completedCount}/{stages.length}
+                  </span>
                 </div>
-                <div className="h-2 bg-stone-200 rounded-full overflow-hidden">
-                  <div className="h-full w-full bg-gradient-to-r from-emerald-500 to-emerald-400" />
+
+                {/* Progress bar */}
+                <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden mb-2">
+                  <motion.div
+                    className="h-full bg-gold-500"
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${progress}%` }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                  />
+                </div>
+
+                {/* Stage pills */}
+                <div className="flex flex-wrap gap-1">
+                  {stages.map((stage, i) => (
+                    <motion.span
+                      key={stage.name}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.4 + i * 0.1 }}
+                      className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                        stage.completed
+                          ? "bg-green-100 text-green-700"
+                          : "bg-stone-100 text-stone-500"
+                      }`}
+                    >
+                      {stage.completed && "✓ "}{stage.name}
+                    </motion.span>
+                  ))}
                 </div>
               </div>
-              <div className={`${accentClasses[feature.color]} rounded-xl py-3 text-center text-sm font-medium`}>
-                Pay KES 12,500
+
+              {/* Total */}
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs text-navy-500">Estimate Total</span>
+                <span className="text-sm font-bold text-navy-900">KES 12,500</span>
+              </div>
+
+              {/* Pay button */}
+              <div className={`${accentClasses[feature.color]} rounded-xl py-2.5 text-center text-sm font-medium`}>
+                Pay with M-Pesa
               </div>
             </div>
           </div>
@@ -142,31 +193,35 @@ function FeatureVisual({ feature }: { feature: (typeof killerFeatures)[0] }) {
   }
 
   if (feature.visual === "photo-verified") {
+    const photoData = [
+      { label: "Before", src: "/assets/before.png", time: "09:14" },
+      { label: "During", src: "/assets/during.png", time: "11:32" },
+      { label: "After", src: "/assets/after.png", time: "14:45" },
+    ];
+
     return (
       <div className={`relative bg-gradient-to-br ${colorClasses[feature.color]} rounded-3xl p-8 border`}>
         <div className="grid grid-cols-3 gap-3">
-          {["Before", "During", "After"].map((label, i) => (
+          {photoData.map((photo, i) => (
             <motion.div
-              key={label}
+              key={photo.label}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + i * 0.15 }}
-              className="relative"
+              className="flex flex-col"
             >
-              <div className="aspect-square bg-white rounded-xl overflow-hidden border border-stone-200 shadow-sm">
-                <div className="h-full bg-gradient-to-br from-stone-100 to-stone-50 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+              <div className="relative bg-white rounded-xl overflow-hidden border border-stone-200 shadow-sm">
+                <img
+                  src={photo.src}
+                  alt={`${photo.label} repair photo`}
+                  className="w-full h-auto object-contain"
+                />
+                <div className="absolute top-2 right-2 bg-navy-900/80 text-[10px] text-white px-1.5 py-0.5 rounded">
+                  {photo.time}
                 </div>
               </div>
-              <div className="absolute bottom-2 left-2 right-2">
-                <div className={`${accentClasses[feature.color]} text-xs px-2 py-1 rounded-md font-medium text-center`}>
-                  {label}
-                </div>
-              </div>
-              <div className="absolute top-2 right-2 bg-navy-900/80 text-[10px] text-white px-1.5 py-0.5 rounded">
-                {["09:14", "11:32", "14:45"][i]}
+              <div className={`${accentClasses[feature.color]} text-xs px-2 py-1 rounded-md font-medium text-center mt-2`}>
+                {photo.label}
               </div>
             </motion.div>
           ))}
