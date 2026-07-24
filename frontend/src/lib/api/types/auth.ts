@@ -100,7 +100,21 @@ export interface RegisterData {
   display_name: string;
   owner_name: string;
   phone: string;
+  email: string;
   pin: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  email: string;
+}
+
+export interface VerifyEmailResponse {
+  message: string;
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
 }
 
 export interface RegisterSellerData {

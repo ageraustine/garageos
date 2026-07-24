@@ -9,6 +9,7 @@ import {
   refreshToken,
   triggerLogout,
   type RegisterData,
+  type RegisterResponse,
   type UserResponse,
 } from "@/lib/api";
 import type { User, AuthState } from "@/lib/auth-types";
@@ -16,7 +17,7 @@ import type { User, AuthState } from "@/lib/auth-types";
 export function useAuth(): AuthState & {
   login: (phone: string, pin: string) => Promise<void>;
   logout: () => void;
-  register: (data: RegisterData) => Promise<void>;
+  register: (data: RegisterData) => Promise<RegisterResponse>;
   refreshUser: () => Promise<void>;
 } {
   const router = useRouter();
@@ -153,17 +154,11 @@ export function useAuth(): AuthState & {
     setState({ user, isLoading: false, isAuthenticated: true });
   }, []);
 
-  const register = useCallback(async (data: RegisterData) => {
-    const tokens = await api.auth.register(data);
-    localStorage.setItem("access_token", tokens.access_token);
-    localStorage.setItem("refresh_token", tokens.refresh_token);
-
-    const userData = await api.auth.me();
-    const user: User = {
-      ...userData,
-      role: userData.role as User["role"],
-    };
-    setState({ user, isLoading: false, isAuthenticated: true });
+  const register = useCallback(async (data: RegisterData): Promise<RegisterResponse> => {
+    // Registration now returns a message to check email, not tokens
+    // User must verify email before they can log in
+    const response = await api.auth.register(data);
+    return response;
   }, []);
 
   const logout = useCallback(() => {

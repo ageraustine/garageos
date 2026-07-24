@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+import secrets
 from sqlmodel import Session, select
 from app.models.chain import Chain
 from app.models.branch import Branch
@@ -6,6 +7,7 @@ from app.models.employee import Employee, EmployeeRole
 from app.schemas.auth import (
     RegisterRequest,
     RegisterSellerRequest,
+    RegisterResponse,
     LoginRequest,
     TokenResponse,
     UserResponse,
@@ -13,12 +15,14 @@ from app.schemas.auth import (
     ChangePinRequest,
     ChainSettingsUpdate,
     ChainSettingsResponse,
+    VerifyEmailResponse,
 )
 from app.models.marketplace.seller import MarketplaceSeller
 from app.core.security import hash_pin, verify_pin, create_access_token, create_refresh_token
 from app.core.exceptions import ConflictError, UnauthorizedError, NotFoundError
 from app.config import settings
 from app.services.service_service import ServiceService
+from app.services.email_service import EmailService
 
 
 class AuthService:
@@ -51,14 +55,22 @@ class AuthService:
 
         return False, None
 
-    def register(self, data: RegisterRequest) -> TokenResponse:
+    def _generate_verification_token(self) -> str:
+        """Generate a secure verification token."""
+        return secrets.token_urlsafe(32)
+
+    def register(self, data: RegisterRequest) -> RegisterResponse:
         """
         Register a new chain with owner account.
 
         Creates:
         1. Chain record
         2. Default "Headquarters" branch
-        3. Owner as Employee with role=hq
+        3. Owner as Employee with role=hq (unverified)
+        4. Sends verification email
+
+        Returns a message to check email, NOT tokens.
+        User must verify email before logging in.
         """
         # Check name availability
         available, _ = self.check_name_availability(data.chain_name)
@@ -72,6 +84,16 @@ class AuthService:
         if existing_phone:
             raise ConflictError("Phone number already registered")
 
+        # Check email uniqueness
+        existing_email = self.db.exec(
+            select(Employee).where(Employee.email == data.email.lower())
+        ).first()
+        if existing_email:
+            raise ConflictError("Email address already registered")
+
+        # Generate verification token
+        verification_token = self._generate_verification_token()
+
         # Create chain
         chain = Chain(name=data.chain_name.lower(), display_name=data.display_name)
         self.db.add(chain)
@@ -82,14 +104,18 @@ class AuthService:
         self.db.add(hq_branch)
         self.db.flush()
 
-        # Create owner as HQ employee
+        # Create owner as HQ employee (unverified)
         owner = Employee(
             chain_id=chain.id,
             branch_id=hq_branch.id,
             role=EmployeeRole.HQ,
             name=data.owner_name,
             phone=data.phone,
+            email=data.email.lower(),
             pin_hash=hash_pin(data.pin),
+            email_verified=False,
+            email_verification_token=verification_token,
+            email_verification_sent_at=datetime.now(timezone.utc),
         )
         self.db.add(owner)
         self.db.commit()
@@ -99,8 +125,18 @@ class AuthService:
         service_service = ServiceService(self.db)
         service_service.seed_defaults_for_chain(chain.id)
 
-        # Generate tokens
-        return self._create_tokens(owner, chain)
+        # Send verification email
+        email_service = EmailService()
+        email_service.send_verification_email(
+            to_email=owner.email,
+            user_name=owner.name,
+            verification_token=verification_token,
+        )
+
+        return RegisterResponse(
+            message="Registration successful. Please check your email to verify your account.",
+            email=owner.email,
+        )
 
     def register_seller(self, data: RegisterSellerRequest) -> TokenResponse:
         """
@@ -149,6 +185,95 @@ class AuthService:
         # Generate tokens
         return self._create_tokens_for_seller(seller_user)
 
+    def verify_email(self, token: str) -> VerifyEmailResponse:
+        """
+        Verify email address using the verification token.
+
+        Returns tokens on success so user is logged in immediately.
+        """
+        # Find employee by token
+        employee = self.db.exec(
+            select(Employee).where(Employee.email_verification_token == token)
+        ).first()
+
+        if not employee:
+            raise NotFoundError("Invalid or expired verification token")
+
+        # Check token expiry (24 hours)
+        if employee.email_verification_sent_at:
+            expiry = employee.email_verification_sent_at + timedelta(
+                hours=settings.EMAIL_VERIFICATION_EXPIRE_HOURS
+            )
+            if datetime.now(timezone.utc) > expiry:
+                raise UnauthorizedError("Verification token has expired. Please request a new one.")
+
+        # Mark as verified
+        employee.email_verified = True
+        employee.email_verification_token = None  # Clear token
+        employee.last_login_at = datetime.now(timezone.utc)
+        self.db.commit()
+        self.db.refresh(employee)
+
+        # Send welcome email
+        email_service = EmailService()
+        email_service.send_welcome_email(
+            to_email=employee.email,
+            user_name=employee.name,
+        )
+
+        # Generate tokens
+        if employee.is_external_seller:
+            tokens = self._create_tokens_for_seller(employee)
+        else:
+            chain = self.db.get(Chain, employee.chain_id)
+            if not chain:
+                raise NotFoundError("Chain not found")
+            tokens = self._create_tokens(employee, chain)
+
+        return VerifyEmailResponse(
+            message="Email verified successfully",
+            access_token=tokens.access_token,
+            refresh_token=tokens.refresh_token,
+            expires_in=tokens.expires_in,
+        )
+
+    def resend_verification_email(self, email: str) -> RegisterResponse:
+        """
+        Resend verification email to a user who hasn't verified yet.
+        """
+        employee = self.db.exec(
+            select(Employee).where(Employee.email == email.lower())
+        ).first()
+
+        if not employee:
+            # Don't reveal if email exists
+            return RegisterResponse(
+                message="If an account exists with this email, a verification link has been sent.",
+                email=email,
+            )
+
+        if employee.email_verified:
+            raise ConflictError("This email is already verified. Please login.")
+
+        # Generate new token
+        verification_token = self._generate_verification_token()
+        employee.email_verification_token = verification_token
+        employee.email_verification_sent_at = datetime.now(timezone.utc)
+        self.db.commit()
+
+        # Send verification email
+        email_service = EmailService()
+        email_service.send_verification_email(
+            to_email=employee.email,
+            user_name=employee.name,
+            verification_token=verification_token,
+        )
+
+        return RegisterResponse(
+            message="If an account exists with this email, a verification link has been sent.",
+            email=email,
+        )
+
     def login(self, data: LoginRequest) -> TokenResponse:
         """Authenticate user by phone and PIN."""
         employee = self.db.exec(
@@ -159,6 +284,10 @@ class AuthService:
 
         if not employee or not verify_pin(data.pin, employee.pin_hash):
             raise UnauthorizedError("Invalid phone or PIN")
+
+        # Check if email is verified (skip for external sellers who might not have email)
+        if employee.email and not employee.email_verified:
+            raise UnauthorizedError("Please verify your email address before logging in. Check your inbox for the verification link.")
 
         # Update last login
         employee.last_login_at = datetime.now(timezone.utc)

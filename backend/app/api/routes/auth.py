@@ -9,6 +9,7 @@ from app.schemas.auth import (
     CheckNameResponse,
     RegisterRequest,
     RegisterSellerRequest,
+    RegisterResponse,
     LoginRequest,
     TokenResponse,
     RefreshTokenRequest,
@@ -20,6 +21,9 @@ from app.schemas.auth import (
     LogoUploadRequest,
     LogoUploadResponse,
     LogoConfirmRequest,
+    VerifyEmailRequest,
+    VerifyEmailResponse,
+    ResendVerificationRequest,
 )
 from app.services.auth_service import AuthService
 from app.api.deps import get_storage_service
@@ -44,16 +48,44 @@ async def check_name_availability(
 
 
 @router.post(
-    "/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED
+    "/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED
 )
 async def register(data: RegisterRequest, db: Session = Depends(get_db)):
     """
     Register a new chain and owner account.
     Creates: Chain + default Branch + Owner Employee (HQ role).
+    Sends verification email - user must verify before logging in.
     """
     service = AuthService(db)
     try:
         return service.register(data)
+    except ConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
+
+
+@router.post("/verify-email", response_model=VerifyEmailResponse)
+async def verify_email(data: VerifyEmailRequest, db: Session = Depends(get_db)):
+    """
+    Verify email address using the token sent via email.
+    Returns JWT tokens on success so user is logged in immediately.
+    """
+    service = AuthService(db)
+    try:
+        return service.verify_email(data.token)
+    except NotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except UnauthorizedError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
+
+
+@router.post("/resend-verification", response_model=RegisterResponse)
+async def resend_verification(data: ResendVerificationRequest, db: Session = Depends(get_db)):
+    """
+    Resend verification email to a user who hasn't verified yet.
+    """
+    service = AuthService(db)
+    try:
+        return service.resend_verification_email(data.email)
     except ConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
 

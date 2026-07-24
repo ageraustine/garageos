@@ -66,6 +66,19 @@ class Employee(SQLModel, table=True):
         description="True for marketplace-only sellers (not garage employees)",
     )
     is_active: bool = Field(default=True)
+    email_verified: bool = Field(
+        default=False,
+        description="True if email has been verified via confirmation link",
+    )
+    email_verification_token: Optional[str] = Field(
+        default=None,
+        max_length=100,
+        description="Token for email verification (expires after use)",
+    )
+    email_verification_sent_at: Optional[datetime] = Field(
+        default=None,
+        description="When the verification email was sent",
+    )
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login_at: Optional[datetime] = Field(default=None)
 

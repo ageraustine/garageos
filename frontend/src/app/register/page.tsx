@@ -73,9 +73,15 @@ export default function RegisterPage() {
     displayName: "",
     ownerName: "",
     phone: "",
+    email: "",
     pin: "",
     confirmPin: "",
   });
+
+  const [registrationSuccess, setRegistrationSuccess] = useState<{
+    success: boolean;
+    email: string;
+  } | null>(null);
 
   const [nameStatus, setNameStatus] = useState<{
     checking: boolean;
@@ -132,6 +138,10 @@ export default function RegisterPage() {
       setError("Garage handle must be at least 3 characters");
       return;
     }
+    if (!form.email || !form.email.includes("@")) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -153,20 +163,82 @@ export default function RegisterPage() {
         return;
       }
 
-      await register({
+      // Register - this now returns a message, not tokens
+      const response = await api.auth.register({
         chain_name: form.chainName.toLowerCase(),
         display_name: form.displayName,
         owner_name: form.ownerName,
         phone: form.phone,
+        email: form.email.toLowerCase(),
         pin: form.pin,
       });
-      router.push("/dashboard");
+
+      // Show success message instead of redirecting
+      setRegistrationSuccess({
+        success: true,
+        email: response.email,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Show success message after registration
+  if (registrationSuccess) {
+    return (
+      <div className="min-h-screen bg-navy-50 py-12">
+        <Container className="max-w-md">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            className="bg-white rounded-2xl shadow-xl p-8 border border-navy-100 text-center"
+          >
+            {/* Success Icon */}
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+
+            <h1 className="text-2xl font-bold text-navy-900 mb-2">
+              Check Your Email
+            </h1>
+            <p className="text-navy-600 mb-6">
+              We&apos;ve sent a verification link to:
+            </p>
+            <p className="text-lg font-medium text-gold-600 mb-6">
+              {registrationSuccess.email}
+            </p>
+            <p className="text-sm text-navy-500 mb-8">
+              Click the link in the email to verify your account and start using GarageOS.
+              The link will expire in 24 hours.
+            </p>
+
+            <div className="space-y-4">
+              <Link href="/login">
+                <Button variant="primary" size="lg" className="w-full">
+                  Go to Login
+                </Button>
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  api.auth.resendVerification(registrationSuccess.email);
+                  alert("Verification email resent!");
+                }}
+                className="text-sm text-gold-600 hover:text-gold-700 font-medium"
+              >
+                Didn&apos;t receive the email? Resend
+              </button>
+            </div>
+          </motion.div>
+        </Container>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-navy-50 py-12">
@@ -283,6 +355,25 @@ export default function RegisterPage() {
                 className="w-full px-4 py-3 border border-navy-200 rounded-xl focus:ring-2 focus:ring-gold-500 focus:border-gold-500 transition-all"
                 placeholder="John Doe"
               />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-navy-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, email: e.target.value }))
+                }
+                className="w-full px-4 py-3 border border-navy-200 rounded-xl focus:ring-2 focus:ring-gold-500 focus:border-gold-500 transition-all"
+                placeholder="you@example.com"
+              />
+              <p className="mt-1 text-xs text-navy-400">
+                We&apos;ll send a verification link to this address
+              </p>
             </div>
 
             {/* Phone */}

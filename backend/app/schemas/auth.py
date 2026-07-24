@@ -33,6 +33,7 @@ class RegisterRequest(BaseModel):
     display_name: str = Field(min_length=2, max_length=100)
     owner_name: str = Field(min_length=2, max_length=100)
     phone: str = Field(pattern=r"^\+?[0-9]{10,15}$")
+    email: str = Field(max_length=255, pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
     pin: str = Field(min_length=4, max_length=6, pattern=r"^[0-9]{4,6}$")
 
     @field_validator("chain_name")
@@ -46,6 +47,11 @@ class RegisterRequest(BaseModel):
         if "--" in v:
             raise ValueError("Consecutive hyphens not allowed")
         return v
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        return v.lower().strip()
 
 
 class RegisterSellerRequest(BaseModel):
@@ -202,3 +208,32 @@ class LogoConfirmRequest(BaseModel):
     """Request to confirm logo upload."""
 
     object_key: str
+
+
+class RegisterResponse(BaseModel):
+    """Response after registration (before email verification)."""
+
+    message: str
+    email: str
+
+
+class VerifyEmailRequest(BaseModel):
+    """Request to verify email with token."""
+
+    token: str
+
+
+class VerifyEmailResponse(BaseModel):
+    """Response after email verification."""
+
+    message: str
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+
+class ResendVerificationRequest(BaseModel):
+    """Request to resend verification email."""
+
+    email: str = Field(pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")

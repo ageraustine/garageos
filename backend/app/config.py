@@ -43,6 +43,17 @@ class Settings(BaseSettings):
     # CORS - comma-separated list of allowed origins
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
+    # Email (SMTP) - Zoho Mail
+    SMTP_HOST: str = "smtp.zoho.com"
+    SMTP_PORT: int = 587  # Use 587 with TLS or 465 with SSL
+    SMTP_USER: str = "platform@garageos.africa"
+    SMTP_PASSWORD: str = ""  # Set in .env
+    SMTP_FROM_EMAIL: str = "platform@garageos.africa"
+    SMTP_FROM_NAME: str = "GarageOS"
+    SMTP_TLS: bool = True  # TLS for port 587
+    SMTP_SSL: bool = False  # Set True if using port 465
+    EMAIL_VERIFICATION_EXPIRE_HOURS: int = 24
+
     class Config:
         env_file = ".env"
         extra = "ignore"

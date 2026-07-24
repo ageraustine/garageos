@@ -8,9 +8,11 @@ import type {
   ChainSettingsResponse,
   ChainSettingsUpdate,
   RegisterData,
+  RegisterResponse,
   RegisterSellerData,
   ProfileUpdate,
   ChangePinRequest,
+  VerifyEmailResponse,
 } from "../types";
 
 export const authApi = {
@@ -21,9 +23,21 @@ export const authApi = {
     }),
 
   register: (data: RegisterData) =>
-    request<TokenResponse>("/auth/register", {
+    request<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
+    }),
+
+  verifyEmail: (token: string) =>
+    request<VerifyEmailResponse>("/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    }),
+
+  resendVerification: (email: string) =>
+    request<RegisterResponse>("/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
     }),
 
   registerSeller: (data: RegisterSellerData) =>
