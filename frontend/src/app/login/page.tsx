@@ -17,8 +17,16 @@ function LoginContent() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showExpiredMessage, setShowExpiredMessage] = useState(false);
 
-  const sessionExpired = searchParams.get("expired") === "true";
+  // Check for expired param once on mount and clear it from URL
+  useEffect(() => {
+    if (searchParams.get("expired") === "true") {
+      setShowExpiredMessage(true);
+      // Clear the query parameter from URL without triggering a navigation
+      router.replace("/login", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -72,7 +80,7 @@ function LoginContent() {
             Enter your phone number and PIN to continue
           </p>
 
-          {sessionExpired && (
+          {showExpiredMessage && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
