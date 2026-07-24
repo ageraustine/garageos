@@ -16,47 +16,48 @@ import type {
 } from "../types";
 
 export const authApi = {
+  // Public endpoints (skipAuth = true)
   checkName: (name: string) =>
     request<CheckNameResponse>("/auth/check-name", {
       method: "POST",
       body: JSON.stringify({ name }),
-    }),
+    }, true),
 
   register: (data: RegisterData) =>
     request<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    }, true),
 
   verifyEmail: (token: string) =>
     request<VerifyEmailResponse>("/auth/verify-email", {
       method: "POST",
       body: JSON.stringify({ token }),
-    }),
+    }, true),
 
   resendVerification: (email: string) =>
     request<RegisterResponse>("/auth/resend-verification", {
       method: "POST",
       body: JSON.stringify({ email }),
-    }),
+    }, true),
 
   registerSeller: (data: RegisterSellerData) =>
     request<TokenResponse>("/auth/register-seller", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    }, true),
 
   login: (phone: string, pin: string) =>
     request<TokenResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ phone, pin }),
-    }),
+    }, true),
 
   refresh: (refreshToken: string) =>
     request<TokenResponse>("/auth/refresh", {
       method: "POST",
       body: JSON.stringify({ refresh_token: refreshToken }),
-    }),
+    }, true),
 
   me: () => request<UserResponse>("/auth/me"),
 
