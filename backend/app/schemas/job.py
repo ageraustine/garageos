@@ -16,6 +16,7 @@ class JobCreate(BaseModel):
     assigned_employee_ids: List[int] = Field(default_factory=list)  # Assigned employees
     customer_name: Optional[str] = Field(None, max_length=100)
     customer_phone: Optional[str] = Field(None, max_length=20)
+    customer_email: Optional[str] = Field(None, max_length=200)
     fuel_level: Optional[int] = Field(None, ge=0, le=100)
     damage_pins: Optional[List[dict]] = None
 
@@ -43,6 +44,7 @@ class JobResponse(BaseModel):
     assigned_mechanic_id: Optional[int]
     customer_name: Optional[str]
     customer_phone: Optional[str]
+    customer_email: Optional[str]
     status: str
     intake_at: datetime
     promised_ready_at: Optional[datetime]
@@ -67,6 +69,7 @@ class JobListItem(BaseModel):
     vehicle_model: str
     customer_name: Optional[str]
     customer_phone: Optional[str]
+    customer_email: Optional[str]
     status: str
     status_label: str
     intake_at: datetime
@@ -124,6 +127,7 @@ class JobDetail(BaseModel):
     vehicle_year: Optional[int]
     customer_name: Optional[str]
     customer_phone: Optional[str]
+    customer_email: Optional[str]
     status: str
     status_label: str
     next_statuses: List[str]  # Valid transitions

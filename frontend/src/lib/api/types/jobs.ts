@@ -16,6 +16,7 @@ export interface JobCreateData {
   assigned_employee_ids?: number[];
   customer_name?: string;
   customer_phone?: string;
+  customer_email?: string;
 }
 
 export interface JobCreateResponse {
@@ -44,6 +45,7 @@ export interface JobListItem {
   vehicle_model: string;
   customer_name: string | null;
   customer_phone: string | null;
+  customer_email: string | null;
   status: string;
   status_label: string;
   intake_at: string;
@@ -88,6 +90,7 @@ export interface JobDetail {
   vehicle_year: number | null;
   customer_name: string | null;
   customer_phone: string | null;
+  customer_email: string | null;
   status: string;
   status_label: string;
   next_statuses: string[];

@@ -38,6 +38,7 @@ class Job(SQLModel, table=True):
     )
     customer_name: Optional[str] = Field(default=None, max_length=100)
     customer_phone: Optional[str] = Field(default=None, max_length=20, index=True)
+    customer_email: Optional[str] = Field(default=None, max_length=200, index=True)
     status: JobStatus = Field(default=JobStatus.INTAKE, index=True)
     intake_at: datetime = Field(default_factory=datetime.utcnow)
     promised_ready_at: Optional[datetime] = Field(default=None)

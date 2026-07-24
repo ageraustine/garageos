@@ -1,4 +1,4 @@
-"""Job notification service - SMS alerts for customers on job progress."""
+"""Job notification service - Email alerts for customers on job progress."""
 
 from sqlmodel import Session, select
 from datetime import datetime
@@ -10,8 +10,9 @@ from app.models.notification import (
     NotificationType,
 )
 from app.models.job import Job
+from app.models.vehicle import Vehicle
 from app.models.chain import Chain
-from app.services.sms_service import get_sms_service, SMSError
+from app.services.email_service import EmailService
 from app.config import settings
 import logging
 
@@ -32,7 +33,7 @@ STATUS_NOTIFICATIONS = {
 
 class JobNotificationService:
     """
-    Manages SMS notifications to customers about job progress.
+    Manages email notifications to customers about job progress.
 
     Notifications are sent at key milestones:
     - Job Started (diagnosis begins)
@@ -42,7 +43,7 @@ class JobNotificationService:
 
     def __init__(self, db: Session):
         self.db = db
-        self.sms_service = get_sms_service()
+        self.email_service = EmailService()
 
     def should_notify(self, job: Job, new_status: str) -> Optional[NotificationType]:
         """
@@ -50,8 +51,8 @@ class JobNotificationService:
 
         Returns the notification type if we should notify, None otherwise.
         """
-        # Only notify if customer phone is available
-        if not job.customer_phone:
+        # Only notify if customer email is available
+        if not job.customer_email:
             return None
 
         # Check if this status triggers a notification
@@ -74,54 +75,10 @@ class JobNotificationService:
 
         return notification_type
 
-    def get_message(
-        self,
-        notification_type: NotificationType,
-        job: Job,
-        chain: Chain,
-    ) -> str:
-        """Generate the SMS message for a notification type."""
-        # Build magic link URL
-        magic_link = f"{settings.FRONTEND_URL}/job/{job.magic_link_token}"
-
-        # Customer name for personalization
-        customer = job.customer_name or "Customer"
-        plate = job.plate
-
-        # Get chain display name
-        garage_name = chain.display_name or chain.name
-
-        if notification_type == NotificationType.JOB_STARTED:
-            return (
-                f"Hi {customer}, your vehicle ({plate}) is now being diagnosed at {garage_name}. "
-                f"Track progress: {magic_link}"
-            )
-
-        elif notification_type == NotificationType.JOB_PROGRESS:
-            return (
-                f"Hi {customer}, work on your vehicle ({plate}) is 50% complete at {garage_name}. "
-                f"Track progress: {magic_link}"
-            )
-
-        elif notification_type == NotificationType.JOB_READY:
-            return (
-                f"Hi {customer}, great news! Your vehicle ({plate}) is ready for pickup at {garage_name}. "
-                f"View & pay: {magic_link}"
-            )
-
-        elif notification_type == NotificationType.ESTIMATE_READY:
-            return (
-                f"Hi {customer}, the quotation for your vehicle ({plate}) is ready at {garage_name}. "
-                f"Review & approve: {magic_link}"
-            )
-
-        elif notification_type == NotificationType.PAYMENT_RECEIVED:
-            return (
-                f"Hi {customer}, payment received for your vehicle ({plate}) at {garage_name}. "
-                f"Thank you for choosing us!"
-            )
-
-        return f"Update on your vehicle ({plate}) at {garage_name}: {magic_link}"
+    def _get_plate(self, job: Job) -> str:
+        """Get the vehicle plate for a job."""
+        vehicle = self.db.get(Vehicle, job.vehicle_id)
+        return vehicle.plate if vehicle else "Unknown"
 
     def send_notification(
         self,
@@ -130,63 +87,97 @@ class JobNotificationService:
         chain: Chain,
     ) -> Optional[Notification]:
         """
-        Send a notification to the customer and log it.
+        Send an email notification to the customer and log it.
 
         Returns the Notification record if sent, None if skipped.
         """
-        if not job.customer_phone:
-            logger.warning(f"Job {job.id}: No customer phone, skipping notification")
+        if not job.customer_email:
+            logger.warning(f"Job {job.id}: No customer email, skipping notification")
             return None
 
-        # Generate message
-        message = self.get_message(notification_type, job, chain)
+        # Get job details
+        customer_name = job.customer_name or "Customer"
+        plate = self._get_plate(job)
+        garage_name = chain.display_name or chain.name
+        magic_link = f"{settings.FRONTEND_URL}/job/{job.magic_link_token}"
 
         # Create notification record
         notification = Notification(
             job_id=job.id,
             chain_id=job.chain_id,
-            phone=job.customer_phone,
+            phone=job.customer_phone,  # Keep for reference
+            email=job.customer_email,
             customer_name=job.customer_name,
             notification_type=notification_type,
-            channel=NotificationChannel.SMS,
-            message=message,
+            channel=NotificationChannel.EMAIL,
+            message=f"Email sent to {job.customer_email}",
             status=NotificationStatus.PENDING,
         )
         self.db.add(notification)
         self.db.commit()
         self.db.refresh(notification)
 
-        # Send SMS
+        # Send email based on notification type
         try:
-            result = self.sms_service.send(
-                phone=job.customer_phone,
-                message=message,
-            )
+            success = False
+            if notification_type == NotificationType.JOB_STARTED:
+                success = self.email_service.send_job_started_email(
+                    to_email=job.customer_email,
+                    customer_name=customer_name,
+                    plate=plate,
+                    garage_name=garage_name,
+                    magic_link=magic_link,
+                )
+            elif notification_type == NotificationType.JOB_PROGRESS:
+                success = self.email_service.send_job_progress_email(
+                    to_email=job.customer_email,
+                    customer_name=customer_name,
+                    plate=plate,
+                    garage_name=garage_name,
+                    magic_link=magic_link,
+                )
+            elif notification_type == NotificationType.JOB_READY:
+                success = self.email_service.send_job_ready_email(
+                    to_email=job.customer_email,
+                    customer_name=customer_name,
+                    plate=plate,
+                    garage_name=garage_name,
+                    magic_link=magic_link,
+                )
+            elif notification_type == NotificationType.ESTIMATE_READY:
+                success = self.email_service.send_estimate_ready_email(
+                    to_email=job.customer_email,
+                    customer_name=customer_name,
+                    plate=plate,
+                    garage_name=garage_name,
+                    magic_link=magic_link,
+                )
+            elif notification_type == NotificationType.PAYMENT_RECEIVED:
+                success = self.email_service.send_payment_received_email(
+                    to_email=job.customer_email,
+                    customer_name=customer_name,
+                    plate=plate,
+                    garage_name=garage_name,
+                )
 
             notification.sent_at = datetime.utcnow()
 
-            if result.get("status") == "sent":
+            if success:
                 notification.status = NotificationStatus.SENT
-                notification.external_id = result.get("message_id")
-                notification.cost = result.get("cost")
                 logger.info(
-                    f"Job {job.id}: Sent {notification_type.value} SMS to {job.customer_phone}"
+                    f"Job {job.id}: Sent {notification_type.value} email to {job.customer_email}"
                 )
-            elif result.get("status") == "disabled":
-                notification.status = NotificationStatus.SENT
-                notification.error_message = "SMS service disabled"
-                logger.info(f"Job {job.id}: SMS disabled, notification logged only")
             else:
                 notification.status = NotificationStatus.FAILED
-                notification.error_message = result.get("error", "Unknown error")
+                notification.error_message = "Email service not configured or failed"
                 logger.error(
-                    f"Job {job.id}: Failed to send {notification_type.value} SMS: {result}"
+                    f"Job {job.id}: Failed to send {notification_type.value} email"
                 )
 
-        except SMSError as e:
+        except Exception as e:
             notification.status = NotificationStatus.FAILED
             notification.error_message = str(e)
-            logger.exception(f"Job {job.id}: SMS error: {e}")
+            logger.exception(f"Job {job.id}: Email error: {e}")
 
         self.db.add(notification)
         self.db.commit()
@@ -213,7 +204,7 @@ class JobNotificationService:
 
     def notify_estimate_ready(self, job: Job, chain: Chain) -> Optional[Notification]:
         """Send notification when an estimate is created/updated."""
-        if not job.customer_phone:
+        if not job.customer_email:
             return None
 
         # Check if already sent
@@ -233,7 +224,7 @@ class JobNotificationService:
 
     def notify_payment_received(self, job: Job, chain: Chain) -> Optional[Notification]:
         """Send notification when payment is confirmed."""
-        if not job.customer_phone:
+        if not job.customer_email:
             return None
 
         return self.send_notification(job, NotificationType.PAYMENT_RECEIVED, chain)

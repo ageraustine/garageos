@@ -57,6 +57,7 @@ class JobService:
             advisor_id=data.advisor_id,
             customer_name=data.customer_name,
             customer_phone=data.customer_phone,
+            customer_email=data.customer_email,
         )
         self.db.add(job)
         self.db.flush()  # Get job.id for service attachment

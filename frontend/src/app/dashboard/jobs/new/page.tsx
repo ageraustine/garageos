@@ -18,6 +18,7 @@ export default function NewJobPage() {
   const [vehicleModel, setVehicleModel] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -100,6 +101,7 @@ export default function NewJobPage() {
         assigned_employee_ids: selectedEmployees,
         customer_name: customerName.trim() || undefined,
         customer_phone: customerPhone.trim() || undefined,
+        customer_email: customerEmail.trim() || undefined,
       });
 
       // TODO: Upload photo if captured
@@ -172,7 +174,7 @@ export default function NewJobPage() {
           </div>
 
           {/* Customer Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-navy-700 mb-2">
                 Customer Name
@@ -194,6 +196,18 @@ export default function NewJobPage() {
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 placeholder="e.g. 0712345678"
+                className="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-navy-700 mb-2">
+                Customer Email
+              </label>
+              <input
+                type="email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                placeholder="e.g. john@example.com"
                 className="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
               />
             </div>

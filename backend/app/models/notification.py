@@ -47,7 +47,8 @@ class Notification(SQLModel, table=True):
     chain_id: int = Field(foreign_key="chains.id", index=True)
 
     # Recipient info
-    phone: str = Field(max_length=20, description="Recipient phone number")
+    phone: Optional[str] = Field(default=None, max_length=20, description="Recipient phone number")
+    email: Optional[str] = Field(default=None, max_length=200, description="Recipient email address")
     customer_name: Optional[str] = Field(default=None, max_length=100)
 
     # Notification details

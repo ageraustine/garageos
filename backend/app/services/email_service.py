@@ -372,3 +372,482 @@ If you didn't request a PIN reset, you can safely ignore this email.
 """
 
         return self._send_email(to_email, subject, html_content, text_content)
+
+    def send_job_started_email(
+        self,
+        to_email: str,
+        customer_name: str,
+        plate: str,
+        garage_name: str,
+        magic_link: str,
+    ) -> bool:
+        """
+        Send notification when job diagnosis begins.
+        """
+        subject = f"Your vehicle ({plate}) is now being diagnosed - {garage_name}"
+
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f4; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
+                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
+                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
+                            </div>
+                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 32px;">
+                            <h2 style="color: #1a2744; margin: 0 0 16px 0; font-size: 20px;">Hi {customer_name},</h2>
+                            <p style="color: #4a5568; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">
+                                Your vehicle <strong>({plate})</strong> is now being diagnosed at {garage_name}. Our team is inspecting your vehicle to identify any issues.
+                            </p>
+
+                            <!-- Status Badge -->
+                            <div style="background-color: #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center;">
+                                <p style="color: #92400e; margin: 0; font-size: 14px; font-weight: bold;">STATUS: DIAGNOSIS IN PROGRESS</p>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 16px 0;">
+                                        <a href="{magic_link}"
+                                           style="display: inline-block; background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); color: #1a2744; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: bold; font-size: 16px;">
+                                            Track Progress
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="color: #718096; margin: 24px 0 0 0; font-size: 14px; line-height: 1.6;">
+                                You'll receive updates as work progresses. Use the link above to check on your vehicle anytime.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f7fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #718096; margin: 0; font-size: 14px;">
+                                Questions? Reply to this email or contact {garage_name}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+
+        text_content = f"""
+Hi {customer_name},
+
+Your vehicle ({plate}) is now being diagnosed at {garage_name}.
+
+Status: DIAGNOSIS IN PROGRESS
+
+Track your vehicle's progress here: {magic_link}
+
+You'll receive updates as work progresses.
+
+- {garage_name}
+"""
+
+        return self._send_email(to_email, subject, html_content, text_content)
+
+    def send_job_progress_email(
+        self,
+        to_email: str,
+        customer_name: str,
+        plate: str,
+        garage_name: str,
+        magic_link: str,
+    ) -> bool:
+        """
+        Send notification when work is 50% complete.
+        """
+        subject = f"Work on your vehicle ({plate}) is 50% complete - {garage_name}"
+
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f4; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
+                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
+                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
+                            </div>
+                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 32px;">
+                            <h2 style="color: #1a2744; margin: 0 0 16px 0; font-size: 20px;">Hi {customer_name},</h2>
+                            <p style="color: #4a5568; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">
+                                Great progress! Work on your vehicle <strong>({plate})</strong> is now 50% complete at {garage_name}.
+                            </p>
+
+                            <!-- Progress Bar -->
+                            <div style="background-color: #e2e8f0; border-radius: 999px; height: 16px; margin-bottom: 8px; overflow: hidden;">
+                                <div style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); width: 50%; height: 100%;"></div>
+                            </div>
+                            <p style="color: #718096; margin: 0 0 24px 0; font-size: 14px; text-align: center;">50% Complete</p>
+
+                            <!-- Status Badge -->
+                            <div style="background-color: #fed7aa; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center;">
+                                <p style="color: #9a3412; margin: 0; font-size: 14px; font-weight: bold;">STATUS: WORK IN PROGRESS</p>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 16px 0;">
+                                        <a href="{magic_link}"
+                                           style="display: inline-block; background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); color: #1a2744; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: bold; font-size: 16px;">
+                                            View Progress
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f7fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #718096; margin: 0; font-size: 14px;">
+                                Questions? Reply to this email or contact {garage_name}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+
+        text_content = f"""
+Hi {customer_name},
+
+Great progress! Work on your vehicle ({plate}) is now 50% complete at {garage_name}.
+
+Status: WORK IN PROGRESS (50%)
+
+View your vehicle's progress here: {magic_link}
+
+- {garage_name}
+"""
+
+        return self._send_email(to_email, subject, html_content, text_content)
+
+    def send_job_ready_email(
+        self,
+        to_email: str,
+        customer_name: str,
+        plate: str,
+        garage_name: str,
+        magic_link: str,
+    ) -> bool:
+        """
+        Send notification when vehicle is ready for pickup.
+        """
+        subject = f"Your vehicle ({plate}) is ready for pickup! - {garage_name}"
+
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f4; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 32px; text-align: center;">
+                            <div style="width: 64px; height: 64px; background-color: #ffffff; border-radius: 50%; display: inline-block; line-height: 64px;">
+                                <span style="color: #22c55e; font-size: 32px;">&#10003;</span>
+                            </div>
+                            <h1 style="color: #ffffff; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">Vehicle Ready!</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 32px;">
+                            <h2 style="color: #1a2744; margin: 0 0 16px 0; font-size: 20px;">Great news, {customer_name}!</h2>
+                            <p style="color: #4a5568; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">
+                                Your vehicle <strong>({plate})</strong> is now ready for pickup at {garage_name}.
+                            </p>
+
+                            <!-- Progress Bar -->
+                            <div style="background-color: #22c55e; border-radius: 999px; height: 16px; margin-bottom: 8px; overflow: hidden;">
+                                <div style="background-color: #22c55e; width: 100%; height: 100%;"></div>
+                            </div>
+                            <p style="color: #22c55e; margin: 0 0 24px 0; font-size: 14px; text-align: center; font-weight: bold;">100% Complete</p>
+
+                            <!-- Status Badge -->
+                            <div style="background-color: #dcfce7; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center;">
+                                <p style="color: #166534; margin: 0; font-size: 14px; font-weight: bold;">STATUS: READY FOR PICKUP</p>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 16px 0;">
+                                        <a href="{magic_link}"
+                                           style="display: inline-block; background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); color: #1a2744; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: bold; font-size: 16px;">
+                                            View Details & Pay
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="color: #718096; margin: 24px 0 0 0; font-size: 14px; line-height: 1.6; text-align: center;">
+                                You can review the work done and make payment online via the link above.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f7fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #718096; margin: 0; font-size: 14px;">
+                                Thank you for choosing {garage_name}!
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+
+        text_content = f"""
+Great news, {customer_name}!
+
+Your vehicle ({plate}) is now ready for pickup at {garage_name}.
+
+Status: READY FOR PICKUP (100% Complete)
+
+View details and pay online: {magic_link}
+
+Thank you for choosing {garage_name}!
+"""
+
+        return self._send_email(to_email, subject, html_content, text_content)
+
+    def send_estimate_ready_email(
+        self,
+        to_email: str,
+        customer_name: str,
+        plate: str,
+        garage_name: str,
+        magic_link: str,
+    ) -> bool:
+        """
+        Send notification when estimate is ready for approval.
+        """
+        subject = f"Quotation ready for your vehicle ({plate}) - {garage_name}"
+
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f4; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
+                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
+                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
+                            </div>
+                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 32px;">
+                            <h2 style="color: #1a2744; margin: 0 0 16px 0; font-size: 20px;">Hi {customer_name},</h2>
+                            <p style="color: #4a5568; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">
+                                The quotation for your vehicle <strong>({plate})</strong> is now ready for your review at {garage_name}.
+                            </p>
+
+                            <!-- Quote Icon -->
+                            <div style="text-align: center; margin-bottom: 24px;">
+                                <div style="width: 64px; height: 64px; background-color: #dbeafe; border-radius: 50%; display: inline-block; line-height: 64px;">
+                                    <span style="color: #2563eb; font-size: 28px;">&#128196;</span>
+                                </div>
+                            </div>
+
+                            <p style="color: #4a5568; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; text-align: center;">
+                                Please review the quotation and approve to proceed with the work.
+                            </p>
+
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 16px 0;">
+                                        <a href="{magic_link}"
+                                           style="display: inline-block; background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); color: #1a2744; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: bold; font-size: 16px;">
+                                            Review & Approve
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f7fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #718096; margin: 0; font-size: 14px;">
+                                Questions about the quotation? Reply to this email or contact {garage_name}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+
+        text_content = f"""
+Hi {customer_name},
+
+The quotation for your vehicle ({plate}) is ready for your review at {garage_name}.
+
+Please review and approve to proceed with the work: {magic_link}
+
+Questions about the quotation? Contact {garage_name}
+
+- {garage_name}
+"""
+
+        return self._send_email(to_email, subject, html_content, text_content)
+
+    def send_payment_received_email(
+        self,
+        to_email: str,
+        customer_name: str,
+        plate: str,
+        garage_name: str,
+    ) -> bool:
+        """
+        Send notification when payment is confirmed.
+        """
+        subject = f"Payment received for your vehicle ({plate}) - {garage_name}"
+
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f4; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 32px; text-align: center;">
+                            <div style="width: 64px; height: 64px; background-color: #ffffff; border-radius: 50%; display: inline-block; line-height: 64px;">
+                                <span style="color: #22c55e; font-size: 32px;">&#10003;</span>
+                            </div>
+                            <h1 style="color: #ffffff; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">Payment Received!</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 32px;">
+                            <h2 style="color: #1a2744; margin: 0 0 16px 0; font-size: 20px;">Thank you, {customer_name}!</h2>
+                            <p style="color: #4a5568; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">
+                                We have received your payment for your vehicle <strong>({plate})</strong>.
+                            </p>
+
+                            <!-- Success Badge -->
+                            <div style="background-color: #dcfce7; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center;">
+                                <p style="color: #166534; margin: 0; font-size: 14px; font-weight: bold;">PAYMENT CONFIRMED</p>
+                            </div>
+
+                            <p style="color: #4a5568; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; text-align: center;">
+                                Thank you for choosing {garage_name}. We look forward to serving you again!
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f7fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #718096; margin: 0; font-size: 14px;">
+                                Questions? Contact {garage_name}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+
+        text_content = f"""
+Thank you, {customer_name}!
+
+We have received your payment for your vehicle ({plate}).
+
+PAYMENT CONFIRMED
+
+Thank you for choosing {garage_name}. We look forward to serving you again!
+
+- {garage_name}
+"""
+
+        return self._send_email(to_email, subject, html_content, text_content)
