@@ -37,8 +37,8 @@ class Settings(BaseSettings):
     AT_SENDER_ID: str = ""  # Optional: Alphanumeric sender ID (e.g., "GarageOS")
     AT_ENVIRONMENT: str = "sandbox"  # "sandbox" or "production"
 
-    # Frontend URL (for magic links in SMS)
-    FRONTEND_URL: str = "http://localhost:3000"
+    # Frontend URL (for magic links in SMS and email verification)
+    FRONTEND_URL: str = "https://garageos.africa"
 
     # CORS - comma-separated list of allowed origins
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
