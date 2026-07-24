@@ -79,6 +79,15 @@ class Employee(SQLModel, table=True):
         default=None,
         description="When the verification email was sent",
     )
+    password_reset_token: Optional[str] = Field(
+        default=None,
+        max_length=100,
+        description="Token for password reset (expires after use)",
+    )
+    password_reset_sent_at: Optional[datetime] = Field(
+        default=None,
+        description="When the password reset email was sent",
+    )
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login_at: Optional[datetime] = Field(default=None)
 

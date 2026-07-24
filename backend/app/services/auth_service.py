@@ -16,6 +16,8 @@ from app.schemas.auth import (
     ChainSettingsUpdate,
     ChainSettingsResponse,
     VerifyEmailResponse,
+    ForgotPasswordResponse,
+    ResetPasswordResponse,
 )
 from app.models.marketplace.seller import MarketplaceSeller
 from app.core.security import hash_pin, verify_pin, create_access_token, create_refresh_token
@@ -273,6 +275,65 @@ class AuthService:
             message="If an account exists with this email, a verification link has been sent.",
             email=email,
         )
+
+    def forgot_password(self, email: str) -> ForgotPasswordResponse:
+        """
+        Send password reset email to user.
+        """
+        employee = self.db.exec(
+            select(Employee).where(Employee.email == email.lower())
+        ).first()
+
+        # Always return success message to prevent email enumeration
+        success_message = "If an account exists with this email, a password reset link has been sent."
+
+        if not employee:
+            return ForgotPasswordResponse(message=success_message)
+
+        if not employee.is_active:
+            return ForgotPasswordResponse(message=success_message)
+
+        # Generate reset token
+        reset_token = self._generate_verification_token()
+        employee.password_reset_token = reset_token
+        employee.password_reset_sent_at = datetime.now(timezone.utc)
+        self.db.commit()
+
+        # Send reset email
+        email_service = EmailService()
+        email_service.send_password_reset_email(
+            to_email=employee.email,
+            user_name=employee.name,
+            reset_token=reset_token,
+        )
+
+        return ForgotPasswordResponse(message=success_message)
+
+    def reset_password(self, token: str, new_pin: str) -> ResetPasswordResponse:
+        """
+        Reset password using the reset token.
+        """
+        # Find employee by token
+        employee = self.db.exec(
+            select(Employee).where(Employee.password_reset_token == token)
+        ).first()
+
+        if not employee:
+            raise NotFoundError("Invalid or expired reset token")
+
+        # Check token expiry (1 hour)
+        if employee.password_reset_sent_at:
+            expiry = employee.password_reset_sent_at + timedelta(hours=1)
+            if datetime.now(timezone.utc) > expiry:
+                raise UnauthorizedError("Reset token has expired. Please request a new one.")
+
+        # Update PIN
+        employee.pin_hash = hash_pin(new_pin)
+        employee.password_reset_token = None  # Clear token
+        employee.password_reset_sent_at = None
+        self.db.commit()
+
+        return ResetPasswordResponse(message="Your PIN has been reset successfully. You can now log in.")
 
     def login(self, data: LoginRequest) -> TokenResponse:
         """Authenticate user by phone and PIN."""

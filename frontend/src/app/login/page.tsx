@@ -132,9 +132,17 @@ function LoginContent() {
 
             {/* PIN */}
             <div>
-              <label className="block text-sm font-medium text-navy-700 mb-2">
-                PIN
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-navy-700">
+                  PIN
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-gold-600 hover:text-gold-700 font-medium hover:underline"
+                >
+                  Forgot PIN?
+                </Link>
+              </div>
               <input
                 type="password"
                 inputMode="numeric"

@@ -24,6 +24,10 @@ from app.schemas.auth import (
     VerifyEmailRequest,
     VerifyEmailResponse,
     ResendVerificationRequest,
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
 )
 from app.services.auth_service import AuthService
 from app.api.deps import get_storage_service
@@ -88,6 +92,30 @@ async def resend_verification(data: ResendVerificationRequest, db: Session = Dep
         return service.resend_verification_email(data.email)
     except ConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+async def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Request a password reset email.
+    Always returns success to prevent email enumeration.
+    """
+    service = AuthService(db)
+    return service.forgot_password(data.email)
+
+
+@router.post("/reset-password", response_model=ResetPasswordResponse)
+async def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Reset password using the token sent via email.
+    """
+    service = AuthService(db)
+    try:
+        return service.reset_password(data.token, data.new_pin)
+    except NotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except UnauthorizedError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
 
 
 @router.post(

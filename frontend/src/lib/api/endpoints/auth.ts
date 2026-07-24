@@ -13,6 +13,8 @@ import type {
   ProfileUpdate,
   ChangePinRequest,
   VerifyEmailResponse,
+  ForgotPasswordResponse,
+  ResetPasswordResponse,
 } from "../types";
 
 export const authApi = {
@@ -39,6 +41,18 @@ export const authApi = {
     request<RegisterResponse>("/auth/resend-verification", {
       method: "POST",
       body: JSON.stringify({ email }),
+    }, true),
+
+  forgotPassword: (email: string) =>
+    request<ForgotPasswordResponse>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }, true),
+
+  resetPassword: (token: string, newPin: string) =>
+    request<ResetPasswordResponse>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, new_pin: newPin }),
     }, true),
 
   registerSeller: (data: RegisterSellerData) =>

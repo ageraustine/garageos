@@ -270,3 +270,105 @@ Questions? Contact us at info@garageos.africa
 """
 
         return self._send_email(to_email, subject, html_content, text_content)
+
+    def send_password_reset_email(
+        self,
+        to_email: str,
+        user_name: str,
+        reset_token: str,
+    ) -> bool:
+        """
+        Send password reset link to user.
+        """
+        reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
+
+        subject = "Reset your GarageOS PIN"
+
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f4; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
+                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
+                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
+                            </div>
+                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">GarageOS</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 32px;">
+                            <h2 style="color: #1a2744; margin: 0 0 16px 0; font-size: 20px;">Reset Your PIN</h2>
+                            <p style="color: #4a5568; margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">
+                                Hi {user_name}, we received a request to reset your GarageOS PIN. Click the button below to set a new PIN.
+                            </p>
+
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 16px 0;">
+                                        <a href="{reset_url}"
+                                           style="display: inline-block; background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); color: #1a2744; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: bold; font-size: 16px;">
+                                            Reset PIN
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="color: #718096; margin: 24px 0 0 0; font-size: 14px; line-height: 1.6;">
+                                This link will expire in 1 hour. If you didn't request a PIN reset, you can safely ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f7fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #a0aec0; margin: 0; font-size: 12px;">
+                                If the button doesn't work, copy and paste this link into your browser:
+                            </p>
+                            <p style="color: #4299e1; margin: 8px 0 0 0; font-size: 12px; word-break: break-all;">
+                                {reset_url}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Copyright -->
+                <p style="color: #a0aec0; margin: 24px 0 0 0; font-size: 12px; text-align: center;">
+                    &copy; {__import__('datetime').datetime.now().year} GarageOS. All rights reserved.
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+
+        text_content = f"""
+Reset Your PIN
+
+Hi {user_name}, we received a request to reset your GarageOS PIN.
+
+Click the link below to set a new PIN:
+{reset_url}
+
+This link will expire in 1 hour.
+
+If you didn't request a PIN reset, you can safely ignore this email.
+
+- The GarageOS Team
+"""
+
+        return self._send_email(to_email, subject, html_content, text_content)

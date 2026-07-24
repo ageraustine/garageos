@@ -237,3 +237,33 @@ class ResendVerificationRequest(BaseModel):
     """Request to resend verification email."""
 
     email: str = Field(pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+
+
+class ForgotPasswordRequest(BaseModel):
+    """Request to send password reset email."""
+
+    email: str = Field(pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        return v.lower().strip()
+
+
+class ForgotPasswordResponse(BaseModel):
+    """Response after requesting password reset."""
+
+    message: str
+
+
+class ResetPasswordRequest(BaseModel):
+    """Request to reset password with token."""
+
+    token: str
+    new_pin: str = Field(min_length=4, max_length=6, pattern=r"^[0-9]{4,6}$")
+
+
+class ResetPasswordResponse(BaseModel):
+    """Response after password reset."""
+
+    message: str

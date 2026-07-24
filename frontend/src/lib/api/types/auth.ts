@@ -117,6 +117,14 @@ export interface VerifyEmailResponse {
   expires_in: number;
 }
 
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
 export interface RegisterSellerData {
   name: string;
   phone: string;
