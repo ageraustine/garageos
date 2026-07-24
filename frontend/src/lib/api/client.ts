@@ -75,7 +75,8 @@ export async function refreshToken(): Promise<boolean> {
 export async function request<T>(
   endpoint: string,
   options: RequestInit = {},
-  skipAuth = false
+  skipAuth = false,
+  silentAuth = false  // If true, don't trigger logout on 401 (for auth validation)
 ): Promise<T> {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
@@ -118,9 +119,11 @@ export async function request<T>(
         return retryResponse.json();
       }
 
-      // If retry also fails with 401, logout
+      // If retry also fails with 401, logout (unless silent mode)
       if (retryResponse.status === 401) {
-        triggerLogout();
+        if (!silentAuth) {
+          triggerLogout();
+        }
         throw new Error("Session expired. Please login again.");
       }
 
@@ -129,8 +132,10 @@ export async function request<T>(
       }));
       throw new Error(error.detail || "Request failed");
     } else {
-      // Refresh failed, logout
-      triggerLogout();
+      // Refresh failed, logout (unless silent mode)
+      if (!silentAuth) {
+        triggerLogout();
+      }
       throw new Error("Session expired. Please login again.");
     }
   }

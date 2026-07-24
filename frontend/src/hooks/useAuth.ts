@@ -115,12 +115,12 @@ export function useAuth(): AuthState & {
     };
   }, []);
 
-  // Check auth on mount
+  // Check auth on mount (use silent version to avoid triggering logout events)
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
       api.auth
-        .me()
+        .meSilent()
         .then((userData: UserResponse) => {
           const user: User = {
             ...userData,
@@ -129,6 +129,7 @@ export function useAuth(): AuthState & {
           setState({ user, isLoading: false, isAuthenticated: true });
         })
         .catch(() => {
+          // Silently clear invalid tokens without triggering logout redirect
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
           setState({ user: null, isLoading: false, isAuthenticated: false });

@@ -60,6 +60,9 @@ export const authApi = {
 
   me: () => request<UserResponse>("/auth/me"),
 
+  // Silent version that doesn't trigger logout on failure (for initial auth check)
+  meSilent: () => request<UserResponse>("/auth/me", {}, false, true),
+
   updateProfile: (data: ProfileUpdate) =>
     request<UserResponse>("/auth/me", {
       method: "PATCH",
