@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Container, Button } from "@/components/ui";
+import { Container, Button, Logo } from "@/components/ui";
 import { api } from "@/lib/api";
 import { fadeInUp } from "@/lib/animations";
 
@@ -58,12 +58,7 @@ function VerifyEmailContent() {
           className="bg-white rounded-2xl shadow-xl p-8 border border-navy-100 text-center"
         >
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 justify-center mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-gold-400 to-gold-600 rounded-xl flex items-center justify-center">
-              <span className="text-navy-900 font-bold text-xl">G</span>
-            </div>
-            <span className="text-xl font-bold text-navy-900">GarageOS</span>
-          </Link>
+          <Logo size="md" className="mb-8 justify-center" />
 
           {status === "verifying" && (
             <>

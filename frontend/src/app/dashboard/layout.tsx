@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 
 // Full navigation for garage employees
@@ -172,9 +173,13 @@ export default function DashboardLayout({
           {/* Logo */}
           <div className="p-4 border-b border-navy-800">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-gold-400 to-gold-600 rounded-xl flex items-center justify-center">
-                <span className="text-navy-900 font-bold text-xl">G</span>
-              </div>
+              <Image
+                src="/garageos-favicon-32.svg"
+                alt="GarageOS"
+                width={40}
+                height={40}
+                className="flex-shrink-0"
+              />
               <div>
                 <span className="text-lg font-bold text-white">GarageOS</span>
                 <p className="text-xs text-navy-400">

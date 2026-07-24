@@ -25,6 +25,10 @@ export const metadata: Metadata = {
     "M-Pesa",
     "mechanic app",
   ],
+  icons: {
+    icon: "/garageos-favicon-32.svg",
+    apple: "/garageos-favicon-32.svg",
+  },
   openGraph: {
     title: "GarageOS — Trust Infrastructure for Auto Repair Chains",
     description:

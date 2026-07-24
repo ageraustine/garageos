@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { api, GarageListItem } from "@/lib/api";
 
@@ -47,9 +48,13 @@ export default function GaragesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-gold-400 to-gold-600 rounded-lg flex items-center justify-center shadow-md shadow-gold-500/20">
-                <span className="text-navy-900 font-bold text-lg">G</span>
-              </div>
+              <Image
+                src="/garageos-favicon-32.svg"
+                alt="GarageOS"
+                width={36}
+                height={36}
+                className="flex-shrink-0"
+              />
               <span className="text-navy-900 font-bold text-xl">GarageOS</span>
             </Link>
             <div className="flex items-center gap-4">

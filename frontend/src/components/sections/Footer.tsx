@@ -1,5 +1,6 @@
 // Footer component - Single Responsibility: site navigation and legal
 
+import Image from "next/image";
 import { Container } from "@/components/ui";
 
 const CONTACT = {
@@ -42,9 +43,13 @@ export function Footer() {
           {/* Brand & Contact */}
           <div className="col-span-2 md:col-span-1">
             <a href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-gold-400 to-gold-600 rounded-lg flex items-center justify-center">
-                <span className="text-navy-900 font-bold text-sm">G</span>
-              </div>
+              <Image
+                src="/garageos-favicon-32.svg"
+                alt="GarageOS"
+                width={32}
+                height={32}
+                className="flex-shrink-0"
+              />
               <span className="font-bold text-xl">GarageOS</span>
             </a>
             <p className="text-navy-400 text-sm leading-relaxed mb-6">

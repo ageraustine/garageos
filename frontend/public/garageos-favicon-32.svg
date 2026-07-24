@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="GarageOS favicon">
+<title>GarageOS favicon</title>
+<desc>GarageOS mark optimised for 32 pixel display.</desc>
+<g transform="translate(16 16) scale(0.3)" fill="none" stroke="#D4AF37" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="11"><line x1="-19.2" y1="-41.6" x2="19.2" y2="-41.6"/><line x1="26.4" y1="-37.4" x2="45.6" y2="-4.2"/><line x1="45.6" y1="4.2" x2="26.4" y2="37.4"/><line x1="19.2" y1="41.6" x2="-19.2" y2="41.6"/><line x1="-26.4" y1="37.4" x2="-45.6" y2="4.2"/><line x1="-45.6" y1="-4.2" x2="-26.4" y2="-37.4"/></g><path d="M-21 1L-7 15L21-20" stroke-width="13"/></g>
+</svg>

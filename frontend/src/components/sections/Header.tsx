@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Container, Button, MenuIcon } from "@/components/ui";
 import { navLinks } from "@/lib/data";
 
@@ -19,9 +20,13 @@ export function Header() {
         <nav className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <a href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-gold-400 to-gold-600 rounded-lg flex items-center justify-center shadow-md shadow-gold-500/20">
-              <span className="text-navy-900 font-bold text-lg">G</span>
-            </div>
+            <Image
+              src="/garageos-favicon-32.svg"
+              alt="GarageOS"
+              width={36}
+              height={36}
+              className="flex-shrink-0"
+            />
             <span className="font-bold text-xl text-navy-900">GarageOS</span>
           </a>
 
