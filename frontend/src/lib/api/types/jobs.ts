@@ -82,6 +82,15 @@ export interface StageToggleResponse {
   completed_stage_ids: number[];
 }
 
+export interface JobUpdateData {
+  customer_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  promised_ready_at?: string;
+}
+
 export interface JobDetail {
   id: number;
   plate: string;

@@ -137,6 +137,36 @@ class JobService:
         self.db.refresh(job)
         return job
 
+    def update(self, id: int, customer_name: str = None, customer_phone: str = None,
+               customer_email: str = None, vehicle_make: str = None, vehicle_model: str = None,
+               promised_ready_at = None) -> Job:
+        """Update job details (customer info, vehicle info)."""
+        job = self.get_by_id(id)
+
+        # Update customer info on job
+        if customer_name is not None:
+            job.customer_name = customer_name
+        if customer_phone is not None:
+            job.customer_phone = customer_phone
+        if customer_email is not None:
+            job.customer_email = customer_email
+        if promised_ready_at is not None:
+            job.promised_ready_at = promised_ready_at
+
+        # Update vehicle info
+        if vehicle_make is not None or vehicle_model is not None:
+            from app.models.vehicle import Vehicle
+            vehicle = self.db.get(Vehicle, job.vehicle_id)
+            if vehicle:
+                if vehicle_make is not None:
+                    vehicle.make = vehicle_make
+                if vehicle_model is not None:
+                    vehicle.model = vehicle_model
+
+        self.db.commit()
+        self.db.refresh(job)
+        return job
+
     def list_by_branch(
         self, branch_id: int, status: JobStatus = None, limit: int = 50
     ) -> list[Job]:

@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from typing import List, Optional
 from app.database import get_db
 from app.api.deps import get_current_user
-from app.schemas.job import JobCreate, JobStatusUpdate, JobResponse, JobCreateResponse, JobListItem, JobDetail, JobServiceDetail, JobAssignmentUpdate, AssignedEmployee, StageToggleRequest, StageToggleResponse, QuotationTemplateItem
+from app.schemas.job import JobCreate, JobStatusUpdate, JobResponse, JobCreateResponse, JobListItem, JobDetail, JobServiceDetail, JobAssignmentUpdate, AssignedEmployee, StageToggleRequest, StageToggleResponse, QuotationTemplateItem, JobUpdate
 from app.schemas.auth import UserResponse
 from app.services.job_service import JobService, InvalidStatusTransition
 from app.services.service_service import ServiceService
@@ -178,6 +178,111 @@ async def get_job(
     estimate_approved = estimate.approved_at is not None if estimate else False
 
     # Get assigned employees
+    assigned_employees = job_service.get_assigned_employees(job.id)
+
+    return JobDetail(
+        id=job.id,
+        plate=vehicle.plate if vehicle else "Unknown",
+        vehicle_make=vehicle.make if vehicle else "Unknown",
+        vehicle_model=vehicle.model if vehicle else "Unknown",
+        vehicle_year=vehicle.year if vehicle else None,
+        customer_name=job.customer_name,
+        customer_phone=job.customer_phone,
+        customer_email=job.customer_email,
+        status=job.status.value,
+        status_label=STATUS_LABELS.get(job.status.value, job.status.value),
+        next_statuses=next_statuses,
+        intake_at=job.intake_at,
+        promised_ready_at=job.promised_ready_at,
+        actual_ready_at=job.actual_ready_at,
+        magic_link_token=job.magic_link_token,
+        services=services_detail,
+        assigned_employees=assigned_employees,
+        has_estimate=has_estimate,
+        estimate_approved=estimate_approved,
+        created_at=job.created_at,
+    )
+
+
+@router.patch("/{id}", response_model=JobDetail)
+async def update_job(
+    id: int,
+    data: JobUpdate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    """Update job details (customer info, vehicle info)."""
+    job_service = JobService(db)
+    svc_service = ServiceService(db)
+
+    try:
+        job = job_service.update(
+            id,
+            customer_name=data.customer_name,
+            customer_phone=data.customer_phone,
+            customer_email=data.customer_email,
+            vehicle_make=data.vehicle_make,
+            vehicle_model=data.vehicle_model,
+            promised_ready_at=data.promised_ready_at,
+        )
+    except NotFoundError as e:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+
+    # Return full job detail
+    vehicle = db.get(Vehicle, job.vehicle_id)
+
+    # Get services with stages
+    job_services_list = db.exec(
+        select(JobServiceModel).where(JobServiceModel.job_id == job.id)
+    ).all()
+
+    services_detail = []
+    for js in job_services_list:
+        svc = db.get(Service, js.service_id)
+        if svc:
+            stages = svc_service.get_stages(svc.id)
+            current_stage = None
+            if js.current_stage_id:
+                for s in stages:
+                    if s.id == js.current_stage_id:
+                        current_stage = s.name
+                        break
+
+            completed_stage_ids = job_service.get_completed_stages(js.id)
+            quotation_items = svc_service.get_quotation_items(svc.id)
+
+            services_detail.append(
+                JobServiceDetail(
+                    id=js.id,
+                    service_id=svc.id,
+                    service_name=svc.name,
+                    stages=[{"id": s.id, "name": s.name, "order": s.order} for s in stages],
+                    current_stage_id=js.current_stage_id,
+                    current_stage_name=current_stage,
+                    completed_stage_ids=completed_stage_ids,
+                    quotation_items=[
+                        QuotationTemplateItem(
+                            id=q.id,
+                            name=q.name,
+                            price=q.price,
+                            is_labor=q.is_labor,
+                        )
+                        for q in quotation_items
+                    ],
+                    started_at=js.started_at,
+                    completed_at=js.completed_at,
+                )
+            )
+
+    valid_transitions = job_service.VALID_TRANSITIONS.get(job.status, [])
+    next_statuses = [s.value for s in valid_transitions]
+
+    from app.services.estimate_service import EstimateService
+    estimate_service = EstimateService(db)
+    estimate = estimate_service.get_latest_for_job(job.id)
+    has_estimate = estimate is not None
+    estimate_approved = estimate.approved_at is not None if estimate else False
+
     assigned_employees = job_service.get_assigned_employees(job.id)
 
     return JobDetail(

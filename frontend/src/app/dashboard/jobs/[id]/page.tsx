@@ -53,6 +53,17 @@ export default function JobDetailPage({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Edit job state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    customer_name: "",
+    customer_phone: "",
+    customer_email: "",
+    vehicle_make: "",
+    vehicle_model: "",
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
+
   // PDF Preview state
   const [showPdfPreview, setShowPdfPreview] = useState(false);
 
@@ -218,6 +229,38 @@ export default function JobDetailPage({
       setError(err instanceof Error ? err.message : "Failed to delete job");
       setDeleting(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const openEditModal = () => {
+    if (!job) return;
+    setEditForm({
+      customer_name: job.customer_name || "",
+      customer_phone: job.customer_phone || "",
+      customer_email: job.customer_email || "",
+      vehicle_make: job.vehicle_make || "",
+      vehicle_model: job.vehicle_model || "",
+    });
+    setShowEditModal(true);
+  };
+
+  const saveEdit = async () => {
+    if (!job) return;
+    setSavingEdit(true);
+    try {
+      await api.jobs.update(job.id, {
+        customer_name: editForm.customer_name || undefined,
+        customer_phone: editForm.customer_phone || undefined,
+        customer_email: editForm.customer_email || undefined,
+        vehicle_make: editForm.vehicle_make || undefined,
+        vehicle_model: editForm.vehicle_model || undefined,
+      });
+      await loadJob();
+      setShowEditModal(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update job");
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -443,7 +486,15 @@ export default function JobDetailPage({
         <div className="space-y-6">
           {/* Job Info */}
           <div className="bg-white rounded-xl p-6 border border-navy-100 shadow-sm">
-            <h2 className="text-lg font-semibold text-navy-900 mb-4">Details</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-navy-900">Details</h2>
+              <button
+                onClick={openEditModal}
+                className="text-sm text-gold-600 hover:text-gold-700"
+              >
+                Edit
+              </button>
+            </div>
             <dl className="space-y-3 text-sm">
               <div>
                 <dt className="text-navy-500">Job ID</dt>
@@ -461,6 +512,16 @@ export default function JobDetailPage({
                   <dd className="font-medium text-navy-900">
                     <a href={`tel:${job.customer_phone}`} className="text-gold-600 hover:text-gold-700">
                       {job.customer_phone}
+                    </a>
+                  </dd>
+                </div>
+              )}
+              {job.customer_email && (
+                <div>
+                  <dt className="text-navy-500">Email</dt>
+                  <dd className="font-medium text-navy-900">
+                    <a href={`mailto:${job.customer_email}`} className="text-gold-600 hover:text-gold-700">
+                      {job.customer_email}
                     </a>
                   </dd>
                 </div>
@@ -709,6 +770,111 @@ export default function JobDetailPage({
         fetchPdf={() => api.quotation.previewJobPdf(job.id)}
         title={`Quotation - ${job.plate}`}
       />
+
+      {/* Edit Job Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-navy-100">
+              <h3 className="text-lg font-semibold text-navy-900">Edit Job Details</h3>
+              <p className="text-sm text-navy-600 mt-1">
+                Update customer and vehicle information
+              </p>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+              {/* Customer Name */}
+              <div>
+                <label className="block text-sm font-medium text-navy-700 mb-1">
+                  Customer Name
+                </label>
+                <input
+                  type="text"
+                  value={editForm.customer_name}
+                  onChange={(e) => setEditForm({ ...editForm, customer_name: e.target.value })}
+                  placeholder="e.g. John Doe"
+                  className="w-full px-4 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+
+              {/* Customer Phone */}
+              <div>
+                <label className="block text-sm font-medium text-navy-700 mb-1">
+                  Customer Phone
+                </label>
+                <input
+                  type="tel"
+                  value={editForm.customer_phone}
+                  onChange={(e) => setEditForm({ ...editForm, customer_phone: e.target.value })}
+                  placeholder="e.g. 0712345678"
+                  className="w-full px-4 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+
+              {/* Customer Email */}
+              <div>
+                <label className="block text-sm font-medium text-navy-700 mb-1">
+                  Customer Email
+                </label>
+                <input
+                  type="email"
+                  value={editForm.customer_email}
+                  onChange={(e) => setEditForm({ ...editForm, customer_email: e.target.value })}
+                  placeholder="e.g. john@example.com"
+                  className="w-full px-4 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+
+              <hr className="border-navy-100" />
+
+              {/* Vehicle Make */}
+              <div>
+                <label className="block text-sm font-medium text-navy-700 mb-1">
+                  Vehicle Make
+                </label>
+                <input
+                  type="text"
+                  value={editForm.vehicle_make}
+                  onChange={(e) => setEditForm({ ...editForm, vehicle_make: e.target.value })}
+                  placeholder="e.g. Toyota"
+                  className="w-full px-4 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+
+              {/* Vehicle Model */}
+              <div>
+                <label className="block text-sm font-medium text-navy-700 mb-1">
+                  Vehicle Model
+                </label>
+                <input
+                  type="text"
+                  value={editForm.vehicle_model}
+                  onChange={(e) => setEditForm({ ...editForm, vehicle_model: e.target.value })}
+                  placeholder="e.g. Land Cruiser"
+                  className="w-full px-4 py-2 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+                />
+              </div>
+            </div>
+            <div className="p-6 border-t border-navy-100 flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowEditModal(false)}
+                className="flex-1"
+                disabled={savingEdit}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={saveEdit}
+                disabled={savingEdit}
+                className="flex-1"
+              >
+                {savingEdit ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

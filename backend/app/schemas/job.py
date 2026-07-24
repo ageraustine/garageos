@@ -146,3 +146,14 @@ class JobAssignmentUpdate(BaseModel):
     """Update job assignments."""
 
     assigned_employee_ids: List[int]
+
+
+class JobUpdate(BaseModel):
+    """Update job details (customer info, vehicle info)."""
+
+    customer_name: Optional[str] = Field(None, max_length=100)
+    customer_phone: Optional[str] = Field(None, max_length=20)
+    customer_email: Optional[str] = Field(None, max_length=200)
+    vehicle_make: Optional[str] = Field(None, max_length=50)
+    vehicle_model: Optional[str] = Field(None, max_length=50)
+    promised_ready_at: Optional[datetime] = None

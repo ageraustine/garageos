@@ -7,6 +7,7 @@ import type {
   JobCreateResponse,
   JobDetail,
   JobResponse,
+  JobUpdateData,
   AssignedEmployee,
   StageToggleResponse,
 } from "../types";
@@ -22,6 +23,12 @@ export const jobsApi = {
     }),
 
   get: (id: number) => request<JobDetail>(`/jobs/${id}`),
+
+  update: (id: number, data: JobUpdateData) =>
+    request<JobDetail>(`/jobs/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
 
   updateStatus: (id: number, status: string) =>
     request<JobResponse>(`/jobs/${id}/status`, {
