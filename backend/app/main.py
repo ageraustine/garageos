@@ -1,14 +1,28 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.api.routes import auth, customers, vehicles, jobs, estimates, media, payments, link, services, employees, mpesa_callback, quotation, branches, trust_score, analytics, expenses, public
 from app.api.routes.hr import router as hr_router
 from app.api.routes.marketplace import router as marketplace_router
+from app.middleware import RateLimitMiddleware
+from app.services.rate_limiter import close_rate_limiter
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan (startup/shutdown)."""
+    # Startup
+    yield
+    # Shutdown
+    await close_rate_limiter()
+
 
 app = FastAPI(
     title="GarageOS API",
     description="Trust-infrastructure platform for multi-branch auto-repair chains",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS middleware - parse origins from config (comma-separated)
@@ -26,6 +40,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limiting middleware (token bucket algorithm via Redis)
+app.add_middleware(RateLimitMiddleware)
 
 # Include routers
 app.include_router(auth.router, prefix=settings.API_PREFIX)

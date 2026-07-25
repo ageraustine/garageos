@@ -115,11 +115,9 @@ class EmailService:
                 <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
-                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
-                            </div>
-                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">GarageOS</h1>
+                        <td style="background-color: #1a2744; padding: 32px; text-align: center;">
+                            <img src="{settings.FRONTEND_URL}/garageos-favicon-32.svg" alt="GarageOS" width="48" height="48" style="display: block; margin: 0 auto;" />
+                            <h1 style="color: #ffffff; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">GarageOS</h1>
                         </td>
                     </tr>
 
@@ -211,11 +209,9 @@ If you didn't create an account with GarageOS, you can safely ignore this email.
                 <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
-                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
-                            </div>
-                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">GarageOS</h1>
+                        <td style="background-color: #1a2744; padding: 32px; text-align: center;">
+                            <img src="{settings.FRONTEND_URL}/garageos-favicon-32.svg" alt="GarageOS" width="48" height="48" style="display: block; margin: 0 auto;" />
+                            <h1 style="color: #ffffff; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">GarageOS</h1>
                         </td>
                     </tr>
 
@@ -298,11 +294,9 @@ Questions? Contact us at info@garageos.africa
                 <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
-                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
-                            </div>
-                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">GarageOS</h1>
+                        <td style="background-color: #1a2744; padding: 32px; text-align: center;">
+                            <img src="{settings.FRONTEND_URL}/garageos-favicon-32.svg" alt="GarageOS" width="48" height="48" style="display: block; margin: 0 auto;" />
+                            <h1 style="color: #ffffff; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">GarageOS</h1>
                         </td>
                     </tr>
 
@@ -400,11 +394,9 @@ If you didn't request a PIN reset, you can safely ignore this email.
                 <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
-                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
-                            </div>
-                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
+                        <td style="background-color: #1a2744; padding: 32px; text-align: center;">
+                            <img src="{settings.FRONTEND_URL}/garageos-favicon-32.svg" alt="GarageOS" width="48" height="48" style="display: block; margin: 0 auto;" />
+                            <h1 style="color: #ffffff; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
                         </td>
                     </tr>
 
@@ -498,11 +490,9 @@ You'll receive updates as work progresses.
                 <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
-                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
-                            </div>
-                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
+                        <td style="background-color: #1a2744; padding: 32px; text-align: center;">
+                            <img src="{settings.FRONTEND_URL}/garageos-favicon-32.svg" alt="GarageOS" width="48" height="48" style="display: block; margin: 0 auto;" />
+                            <h1 style="color: #ffffff; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
                         </td>
                     </tr>
 
@@ -698,11 +688,9 @@ Thank you for choosing {garage_name}!
                 <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #d4a853 0%, #c4922e 100%); padding: 32px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background-color: #1a2744; border-radius: 12px; display: inline-block; line-height: 48px;">
-                                <span style="color: #d4a853; font-weight: bold; font-size: 24px;">G</span>
-                            </div>
-                            <h1 style="color: #1a2744; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
+                        <td style="background-color: #1a2744; padding: 32px; text-align: center;">
+                            <img src="{settings.FRONTEND_URL}/garageos-favicon-32.svg" alt="GarageOS" width="48" height="48" style="display: block; margin: 0 auto;" />
+                            <h1 style="color: #ffffff; margin: 16px 0 0 0; font-size: 24px; font-weight: bold;">{garage_name}</h1>
                         </td>
                     </tr>
 

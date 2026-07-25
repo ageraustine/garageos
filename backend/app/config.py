@@ -43,6 +43,14 @@ class Settings(BaseSettings):
     # CORS - comma-separated list of allowed origins
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
+    # Redis (for rate limiting)
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    # Rate Limiting (token bucket)
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_REQUESTS_PER_MINUTE: int = 60  # Bucket refill rate
+    RATE_LIMIT_BURST_SIZE: int = 100  # Maximum bucket capacity
+
     # Email (SMTP) - Zoho Mail
     SMTP_HOST: str = "smtp.zoho.com"
     SMTP_PORT: int = 587  # Use 587 with TLS or 465 with SSL
