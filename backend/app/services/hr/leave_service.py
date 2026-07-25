@@ -4,7 +4,7 @@ from datetime import date, datetime
 from typing import Optional
 
 from app.models.hr.leave_request import LeaveRequest, LeaveType, LeaveStatus
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 
 # Default leave entitlements per year
 DEFAULT_ENTITLEMENTS = {

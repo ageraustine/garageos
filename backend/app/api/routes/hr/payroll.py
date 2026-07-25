@@ -6,7 +6,7 @@ from app.database import get_db
 from app.api.deps import get_current_user
 from app.services.hr.payroll_service import PayrollService
 from app.models.hr.payroll_period import PayrollStatus
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 from app.schemas.hr.payroll import (
     PayrollPeriodCreate,
     PayrollPeriodResponse,

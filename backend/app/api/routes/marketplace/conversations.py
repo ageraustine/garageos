@@ -8,7 +8,7 @@ from sqlmodel import Session
 from typing import Optional, List
 from app.database import get_db
 from app.api.deps import get_current_user
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 from app.schemas.marketplace.conversation import (
     ConversationCreate,
     ConversationResponse,

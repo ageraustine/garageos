@@ -8,7 +8,7 @@ from sqlmodel import Session
 from typing import Optional, List
 from app.database import get_db
 from app.api.deps import get_current_user, get_storage_service
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 from app.schemas.marketplace.seller import (
     SellerCreate,
     SellerUpdate,
@@ -18,7 +18,7 @@ from app.schemas.marketplace.seller import (
 from app.schemas.marketplace.listing import ListingListItem
 from app.services.marketplace.seller_service import SellerService
 from app.services.marketplace.listing_service import ListingService
-from app.services.storage_service import StorageService
+from app.services.core.storage_service import StorageService
 from app.core.exceptions import NotFoundError, ConflictError
 
 router = APIRouter(prefix="/sellers", tags=["marketplace-sellers"])

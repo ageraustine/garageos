@@ -6,8 +6,8 @@ from typing import Optional
 from app.database import get_db
 from app.api.deps import get_current_user
 from app.services.hr.attendance_service import AttendanceService
-from app.models.employee import Employee
-from app.models.branch import Branch
+from app.models.core.employee import Employee
+from app.models.core.branch import Branch
 from app.schemas.hr.attendance import (
     ClockInRequest,
     ClockOutRequest,

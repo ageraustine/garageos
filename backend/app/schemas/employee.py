@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 from typing import Optional, List
-from app.models.employee import EmployeeRole, DocumentType
+from app.models.core.employee import EmployeeRole, DocumentType
 
 
 class EmployeeCreate(BaseModel):

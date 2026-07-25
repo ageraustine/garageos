@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, List
-from app.models.job import JobStatus
+from app.models.jobs.job import JobStatus
 
 
 class JobCreate(BaseModel):

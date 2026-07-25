@@ -5,7 +5,7 @@ from typing import Optional
 from decimal import Decimal
 
 from app.models.hr.employee_salary import EmployeeSalary, SalaryChangeReason
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 
 
 class SalaryService:

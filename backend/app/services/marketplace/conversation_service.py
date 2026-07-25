@@ -9,7 +9,7 @@ from app.models.marketplace.conversation import (
 )
 from app.models.marketplace.listing import MarketplaceListing, MarketplaceListingImage
 from app.models.marketplace.seller import MarketplaceSeller
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 from app.schemas.marketplace.conversation import (
     ConversationCreate,
     ConversationResponse,

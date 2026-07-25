@@ -5,9 +5,9 @@ from typing import Optional, List
 from datetime import datetime
 from app.models.marketplace.seller import MarketplaceSeller
 from app.models.marketplace.listing import MarketplaceListing
-from app.models.chain import Chain
-from app.models.branch import Branch
-from app.models.employee import Employee, EmployeeRole
+from app.models.core.chain import Chain
+from app.models.core.branch import Branch
+from app.models.core.employee import Employee, EmployeeRole
 from app.schemas.marketplace.seller import (
     SellerCreate,
     SellerUpdate,

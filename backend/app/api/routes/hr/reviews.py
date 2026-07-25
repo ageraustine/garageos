@@ -6,7 +6,7 @@ from app.database import get_db
 from app.api.deps import get_current_user
 from app.services.hr.review_service import ReviewService
 from app.models.hr.performance_review import ReviewPeriodType
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 from app.schemas.hr.review import (
     PerformanceReviewCreate,
     PerformanceReviewUpdate,

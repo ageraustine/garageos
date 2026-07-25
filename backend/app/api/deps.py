@@ -4,8 +4,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session
 from app.database import get_db
 from app.core.security import decode_token
-from app.services.auth_service import AuthService
-from app.services.storage_service import StorageService
+from app.services.core.auth_service import AuthService
+from app.services.core.storage_service import StorageService
 import jwt
 
 security = HTTPBearer()

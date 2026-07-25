@@ -10,7 +10,7 @@ from typing import Optional, List
 from decimal import Decimal
 from app.database import get_db
 from app.api.deps import get_current_user, get_storage_service
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 from app.schemas.marketplace.listing import (
     ListingCreate,
     ListingUpdate,
@@ -22,7 +22,7 @@ from app.schemas.marketplace.listing import (
 )
 from app.services.marketplace.listing_service import ListingService
 from app.services.marketplace.seller_service import SellerService
-from app.services.storage_service import StorageService
+from app.services.core.storage_service import StorageService
 from app.core.exceptions import NotFoundError, ForbiddenError
 
 router = APIRouter(prefix="/listings", tags=["marketplace-listings"])

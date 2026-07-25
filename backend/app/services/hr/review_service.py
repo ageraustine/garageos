@@ -4,7 +4,7 @@ from datetime import date, datetime
 from typing import Optional
 
 from app.models.hr.performance_review import PerformanceReview, ReviewPeriodType
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 
 
 class ReviewService:

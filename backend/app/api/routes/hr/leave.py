@@ -7,7 +7,7 @@ from app.database import get_db
 from app.api.deps import get_current_user
 from app.services.hr.leave_service import LeaveService
 from app.models.hr.leave_request import LeaveStatus
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 from app.schemas.hr.leave import (
     LeaveRequestCreate,
     LeaveRequestUpdate,

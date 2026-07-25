@@ -8,8 +8,8 @@ import secrets
 from app.models.hr.payroll_period import PayrollPeriod, PayrollStatus
 from app.models.hr.payroll_item import PayrollItem, PayrollItemStatus, DisbursementMethod
 from app.models.hr.employee_salary import EmployeeSalary
-from app.models.employee import Employee
-from app.models.branch import Branch
+from app.models.core.employee import Employee
+from app.models.core.branch import Branch
 from app.services.hr.salary_service import SalaryService
 
 

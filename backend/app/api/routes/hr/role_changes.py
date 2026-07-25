@@ -4,8 +4,8 @@ from sqlmodel import Session
 from app.database import get_db
 from app.api.deps import get_current_user
 from app.services.hr.role_change_service import RoleChangeService
-from app.models.employee import Employee
-from app.models.branch import Branch
+from app.models.core.employee import Employee
+from app.models.core.branch import Branch
 from app.schemas.hr.role_change import (
     RoleChangeResponse,
     RoleChangeHistoryResponse,

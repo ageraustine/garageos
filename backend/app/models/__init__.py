@@ -1,15 +1,58 @@
-from app.models.chain import Chain
-from app.models.branch import Branch
-from app.models.employee import Employee, EmployeeRole
-from app.models.customer import Customer
-from app.models.vehicle import Vehicle
-from app.models.job import Job, JobStatus
-from app.models.estimate import Estimate
-from app.models.line_item import LineItem, LineItemKind
-from app.models.media_asset import MediaAsset, MediaType
-from app.models.payment import Payment, PaymentType, PaymentStatus
-from app.models.service import Service, ServiceStage, JobService, ServiceQuotationItem
-from app.models.expense import Expense, ExpenseCategory
+# Core models
+from app.models.core import (
+    Chain,
+    Branch,
+    Employee,
+    EmployeeRole,
+    EmployeeDocument,
+    DocumentType,
+)
+
+# Job models
+from app.models.jobs import (
+    Job,
+    JobStatus,
+    Estimate,
+    LineItem,
+    LineItemKind,
+    MediaAsset,
+    MediaType,
+    JobAssignment,
+)
+
+# CRM models
+from app.models.crm import (
+    Customer,
+    Vehicle,
+    CustomerNote,
+)
+
+# Catalog models
+from app.models.catalog import (
+    Service,
+    ServiceStage,
+    JobService,
+    ServiceQuotationItem,
+)
+
+# Payment models
+from app.models.payments import (
+    Payment,
+    PaymentType,
+    PaymentStatus,
+    Notification,
+    NotificationType,
+    NotificationStatus,
+    NotificationChannel,
+)
+
+# Finance models
+from app.models.finance import (
+    Expense,
+    ExpenseCategory,
+)
+
+# HR models
 from app.models.hr import (
     EmployeeSalary,
     SalaryChangeReason,
@@ -28,13 +71,25 @@ from app.models.hr import (
     ReviewPeriodType,
 )
 
+# Marketplace models
+from app.models.marketplace import (
+    MarketplaceSeller,
+    MarketplaceCategory,
+    MarketplaceListing,
+    MarketplaceListingImage,
+    MarketplaceConversation,
+    MarketplaceMessage,
+)
+
 __all__ = [
+    # Core
     "Chain",
     "Branch",
     "Employee",
     "EmployeeRole",
-    "Customer",
-    "Vehicle",
+    "EmployeeDocument",
+    "DocumentType",
+    # Jobs
     "Job",
     "JobStatus",
     "Estimate",
@@ -42,17 +97,28 @@ __all__ = [
     "LineItemKind",
     "MediaAsset",
     "MediaType",
-    "Payment",
-    "PaymentType",
-    "PaymentStatus",
+    "JobAssignment",
+    # CRM
+    "Customer",
+    "Vehicle",
+    "CustomerNote",
+    # Catalog
     "Service",
     "ServiceStage",
     "JobService",
     "ServiceQuotationItem",
-    # Expenses
+    # Payments
+    "Payment",
+    "PaymentType",
+    "PaymentStatus",
+    "Notification",
+    "NotificationType",
+    "NotificationStatus",
+    "NotificationChannel",
+    # Finance
     "Expense",
     "ExpenseCategory",
-    # HR models
+    # HR
     "EmployeeSalary",
     "SalaryChangeReason",
     "PayrollPeriod",
@@ -68,4 +134,11 @@ __all__ = [
     "LeaveStatus",
     "PerformanceReview",
     "ReviewPeriodType",
+    # Marketplace
+    "MarketplaceSeller",
+    "MarketplaceCategory",
+    "MarketplaceListing",
+    "MarketplaceListingImage",
+    "MarketplaceConversation",
+    "MarketplaceMessage",
 ]

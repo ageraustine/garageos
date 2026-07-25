@@ -18,7 +18,7 @@ from app.schemas.marketplace.listing import (
     ListingSearchParams,
 )
 from app.core.exceptions import NotFoundError, ForbiddenError
-from app.services.storage_service import StorageService
+from app.services.core.storage_service import StorageService
 
 
 class ListingService:

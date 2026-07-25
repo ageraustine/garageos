@@ -11,7 +11,7 @@ from app.schemas.hr.salary import (
     CurrentSalaryResponse,
     SalaryHistoryResponse,
 )
-from app.models.employee import Employee
+from app.models.core.employee import Employee
 
 router = APIRouter(prefix="/salaries", tags=["HR - Salaries"])
 

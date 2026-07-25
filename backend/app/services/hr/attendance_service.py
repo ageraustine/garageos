@@ -4,8 +4,8 @@ from datetime import date, datetime
 from typing import Optional
 
 from app.models.hr.attendance import AttendanceRecord
-from app.models.employee import Employee
-from app.models.branch import Branch
+from app.models.core.employee import Employee
+from app.models.core.branch import Branch
 
 # Default working hours (8 hours = 480 minutes)
 STANDARD_WORKING_MINUTES = 480

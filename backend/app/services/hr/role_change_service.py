@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from app.models.hr.role_change import RoleChange, RoleChangeType
 from app.models.hr.employee_salary import EmployeeSalary, SalaryChangeReason
-from app.models.employee import Employee, EmployeeRole
+from app.models.core.employee import Employee, EmployeeRole
 from app.services.hr.salary_service import SalaryService
 
 

@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field
 from datetime import datetime
 from typing import Optional
 from enum import Enum
-from app.models.employee import EmployeeRole
+from app.models.core.employee import EmployeeRole
 
 
 class RoleChangeType(str, Enum):

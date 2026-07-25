@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
 from app.models.hr.role_change import RoleChangeType
-from app.models.employee import EmployeeRole
+from app.models.core.employee import EmployeeRole
 
 
 class RoleChangeResponse(BaseModel):
