@@ -1,7 +1,8 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'export', // Tells Next.js to generate static HTML/CSS/JS files
-  // trailingSlash: true, // Optional: recommended for seamless routing on static hosts
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
+  output: 'export',
+  trailingSlash: true, // recommended for static hosts like DO App Platform
 };
 
-module.exports = nextConfig;
+export default nextConfig;
