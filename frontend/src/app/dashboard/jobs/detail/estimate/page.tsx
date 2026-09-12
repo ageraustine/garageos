@@ -114,7 +114,7 @@ export default function EstimateViewPage({
       <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
         <div className="mb-6">
           <Link
-            href={`/dashboard/jobs/${jobId}`}
+            href={`/dashboard/jobs/detail?id=${jobId}`}
             className="text-sm text-navy-500 hover:text-navy-700 mb-2 inline-flex items-center gap-1"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +141,7 @@ export default function EstimateViewPage({
           <p className="text-navy-500 mb-4">
             {error || "This job doesn't have an estimate yet"}
           </p>
-          <Link href={`/dashboard/jobs/${jobId}/estimate/new`}>
+          <Link href={`/dashboard/jobs/detail/estimate/new?id=${jobId}`}>
             <Button variant="primary">Create Estimate</Button>
           </Link>
         </div>
@@ -154,7 +154,7 @@ export default function EstimateViewPage({
       {/* Header */}
       <div className="mb-6">
         <Link
-          href={`/dashboard/jobs/${jobId}`}
+          href={`/dashboard/jobs/detail?id=${jobId}`}
           className="text-sm text-navy-500 hover:text-navy-700 mb-2 inline-flex items-center gap-1"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,13 +336,13 @@ export default function EstimateViewPage({
               )}
 
               {!estimate.approved_at && (
-                <Link href={`/dashboard/jobs/${jobId}/estimate/new`}>
+                <Link href={`/dashboard/jobs/detail/estimate/new?id=${jobId}`}>
                   <Button variant="secondary" className="w-full">
                     Create New Version
                   </Button>
                 </Link>
               )}
-              <Link href={`/dashboard/jobs/${jobId}`}>
+              <Link href={`/dashboard/jobs/detail?id=${jobId}`}>
                 <Button variant="outline" className="w-full">
                   Back to Job
                 </Button>

@@ -43,7 +43,7 @@ export default function NewCustomerPage() {
         tags: tags.trim() ? tags.split(",").map((t) => t.trim()) : undefined,
       });
 
-      router.push(`/dashboard/customers/${customer.id}`);
+      router.push(`/dashboard/customers/detail?id=${customer.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create customer");
       setCreating(false);

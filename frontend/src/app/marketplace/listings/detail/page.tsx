@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Container, Button } from "@/components/ui";
@@ -10,11 +10,27 @@ import { useAuth } from "@/hooks/useAuth";
 import { fadeInUp } from "@/lib/animations";
 
 export default function PublicListingDetailPage() {
-  const params = useParams();
-  const router = useRouter();
+  return (
+    <Suspense
+      fallback={
+        <Container className="py-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin w-8 h-8 border-4 border-gold-500 border-t-transparent rounded-full" />
+          </div>
+        </Container>
+      }
+    >
+      <ListingContent />
+    </Suspense>
+  );
+}
+
+function ListingContent() {
+  const searchParams = useSearchParams();
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   const currency = user?.chain_currency || "KES";
-  const listingId = Number(params.id);
+  const listingId = Number(searchParams.get("id"));
 
   const [listing, setListing] = useState<MarketplaceListing | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,6 +40,7 @@ export default function PublicListingDetailPage() {
   const [startingConversation, setStartingConversation] = useState(false);
 
   useEffect(() => {
+    if (!listingId) return;
     loadListing();
   }, [listingId]);
 
@@ -43,7 +60,7 @@ export default function PublicListingDetailPage() {
     if (!listing) return;
 
     if (!isAuthenticated) {
-      router.push(`/login?redirect=/marketplace/listings/${listing.id}`);
+      router.push(`/login?redirect=/marketplace/listings/detail?id=${listing.id}`);
       return;
     }
 
@@ -91,7 +108,7 @@ export default function PublicListingDetailPage() {
         <div className="flex items-center gap-2 text-sm text-navy-500 mb-6">
           <Link href="/marketplace" className="hover:text-navy-700">Marketplace</Link>
           <span>/</span>
-          <Link href={`/marketplace/categories/${listing.category.slug}`} className="hover:text-navy-700">
+          <Link href={`/marketplace/categories/detail?slug=${listing.category.slug}`} className="hover:text-navy-700">
             {listing.category.name}
           </Link>
           <span>/</span>
@@ -234,7 +251,7 @@ export default function PublicListingDetailPage() {
                 )}
                 <div className="flex-1">
                   <Link
-                    href={`/marketplace/sellers/${listing.seller.id}`}
+                    href={`/marketplace/sellers/detail?id=${listing.seller.id}`}
                     className="font-semibold text-navy-900 hover:text-gold-600 flex items-center gap-1"
                   >
                     {listing.seller.name}

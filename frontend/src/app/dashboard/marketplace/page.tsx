@@ -281,7 +281,7 @@ function ListingCard({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 pt-3 border-t border-navy-100">
-          <Link href={`/dashboard/marketplace/listings/${listing.id}/edit`} className="flex-1">
+          <Link href={`/dashboard/marketplace/listings/edit?id=${listing.id}`} className="flex-1">
             <button className="w-full px-3 py-2 text-sm font-medium text-navy-700 bg-navy-50 hover:bg-navy-100 rounded-lg transition-colors flex items-center justify-center gap-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

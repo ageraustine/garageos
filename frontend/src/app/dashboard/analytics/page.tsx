@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { api, AnalyticsDashboard, BranchListItem, ExpenseAnalytics } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui";
 import { fadeInUp } from "@/lib/animations";
 
 // Date range presets

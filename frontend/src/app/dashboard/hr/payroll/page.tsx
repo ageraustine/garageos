@@ -193,7 +193,7 @@ export default function PayrollPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link
-                      href={`/dashboard/hr/payroll/${period.id}`}
+                      href={`/dashboard/hr/payroll/detail?id=${period.id}`}
                       className="text-gold-600 hover:text-gold-800 font-medium"
                     >
                       View
@@ -212,7 +212,7 @@ export default function PayrollPage() {
           onClose={() => setShowCreateModal(false)}
           onSuccess={(id) => {
             setShowCreateModal(false);
-            router.push(`/dashboard/hr/payroll/${id}`);
+            router.push(`/dashboard/hr/payroll/detail?id=${id}`);
           }}
         />
       )}

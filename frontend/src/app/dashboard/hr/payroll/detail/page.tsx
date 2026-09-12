@@ -1,5 +1,5 @@
 "use client";
-
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -40,7 +40,8 @@ const MONTHS = [
 ];
 
 export default function PayrollDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? "";
   const router = useRouter();
   const [period, setPeriod] = useState<PayrollPeriodDetail | null>(null);
   const [loading, setLoading] = useState(true);

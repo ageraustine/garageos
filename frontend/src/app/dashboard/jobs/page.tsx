@@ -1,5 +1,5 @@
 "use client";
-
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -120,7 +120,7 @@ export default function JobsListPage() {
             {jobs.map((job) => (
               <Link
                 key={job.id}
-                href={`/dashboard/jobs/${job.id}`}
+                href={`/dashboard/jobs/detail?id=${job.id}`}
                 className="block p-4 hover:bg-navy-50 transition-colors"
               >
                 <div className="flex items-center justify-between">

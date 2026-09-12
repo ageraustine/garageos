@@ -146,7 +146,7 @@ export default function NewEstimatePage({
 
     try {
       await api.estimates.create(jobId, { line_items: validItems });
-      router.push(`/dashboard/jobs/${jobId}`);
+      router.push(`/dashboard/jobs/details?id=${jobId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create estimate");
       setCreating(false);
@@ -170,7 +170,7 @@ export default function NewEstimatePage({
       {/* Header */}
       <div className="mb-6">
         <Link
-          href={`/dashboard/jobs/${jobId}`}
+          href={`/dashboard/jobs/details?id=${jobId}`}
           className="text-sm text-navy-500 hover:text-navy-700 mb-2 inline-flex items-center gap-1"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,7 +497,7 @@ export default function NewEstimatePage({
                 >
                   {creating ? "Saving..." : isEditing ? "Save Quotation" : "Create Quotation"}
                 </Button>
-                <Link href={`/dashboard/jobs/${jobId}`}>
+                <Link href={`/dashboard/jobs/details?id=${jobId}`}>
                   <Button type="button" variant="outline" size="lg" className="w-full">
                     Cancel
                   </Button>

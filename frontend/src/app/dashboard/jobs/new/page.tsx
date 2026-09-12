@@ -106,7 +106,7 @@ export default function NewJobPage() {
 
       // TODO: Upload photo if captured
 
-      router.push(`/dashboard/jobs/${job.job_id}`);
+      router.push(`/dashboard/jobs/detail?id=${job.job_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create job");
       setCreating(false);

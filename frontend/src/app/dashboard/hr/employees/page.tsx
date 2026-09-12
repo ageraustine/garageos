@@ -207,7 +207,7 @@ export default function EmployeesPage() {
                   </td>
                   <td className="px-6 py-4 text-right space-x-3">
                     <Link
-                      href={`/dashboard/hr/employees/${emp.id}`}
+                      href={`/dashboard/hr/employees/detail?id=${emp.id}`}
                       className="text-sm text-gold-600 hover:text-gold-700"
                     >
                       Edit

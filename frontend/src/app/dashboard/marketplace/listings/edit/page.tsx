@@ -14,6 +14,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { fadeInUp } from "@/lib/animations";
+import { useSearchParams } from "next/navigation";
 
 const CONDITIONS = [
   { value: "new", label: "New" },
@@ -26,8 +27,11 @@ export default function EditListingPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params);
-  const listingId = parseInt(id);
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
+  const listingId = id ? parseInt(id) : null;
+
+
   const router = useRouter();
   const { user } = useAuth();
   const currency = user?.chain_currency || "KES";
@@ -68,6 +72,7 @@ export default function EditListingPage({
   const loadData = async () => {
     try {
       setLoading(true);
+      if (listingId === null) return;
       const [listingData, categoriesData] = await Promise.all([
         api.marketplace.listings.get(listingId),
         api.marketplace.categories.list(),
@@ -141,6 +146,7 @@ export default function EditListingPage({
     if (!confirm("Delete this image?")) return;
 
     try {
+      if (listingId === null) return;
       await api.marketplace.listings.deleteImage(listingId, image.id);
       setExistingImages(existingImages.filter((img) => img.id !== image.id));
       setSuccess("Image deleted");
@@ -171,6 +177,7 @@ export default function EditListingPage({
 
     for (let i = 0; i < newImages.length; i++) {
       try {
+        if (listingId === null) return;
         const isPrimary = existingImages.length === 0 && i === 0;
         await api.marketplace.listings.uploadImage(listingId, newImages[i], isPrimary);
       } catch (err) {
@@ -225,6 +232,7 @@ export default function EditListingPage({
         brand: brand.trim() || undefined,
         is_active: isActive,
       };
+      if (listingId === null) return;
 
       await api.marketplace.listings.update(listingId, updateData);
 
